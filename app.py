@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify, abort
 import firebase_admin
-from firebase_admin import credentials, db
+from firebase_admin import credentials, db, initialize_app
 import requests
 import datetime
 from dotenv import load_dotenv
@@ -16,6 +16,25 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+
+firebase_cred = {
+    "type": "service_account",
+    "project_id": os.getenv("FIREBASE_PROJECT_ID"),
+    "private_key_id": os.getenv("FIREBASE_PRIVATE_KEY_ID"),
+    "private_key": os.getenv("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),  # Handle newlines
+    "client_email": os.getenv("FIREBASE_CLIENT_EMAIL"),
+    "client_id": os.getenv("FIREBASE_CLIENT_ID"),
+    "auth_uri": os.getenv("FIREBASE_AUTH_URI"),
+    "token_uri": os.getenv("FIREBASE_TOKEN_URI"),
+    "auth_provider_x509_cert_url": os.getenv("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+    "client_x509_cert_url": os.getenv("FIREBASE_CLIENT_X509_CERT_URL")
+}
+
+cred = credentials.Certificate(firebase_cred)
+firebase_admin.initialize_app(cred, {
+    'databaseURL': os.getenv("FIREBASE_DATABASE_URL")
+})
+
 
 def is_admin(uid):
     """Check if user is admin"""
@@ -64,17 +83,11 @@ def admin_required(f):
     return decorated_function
 
 
-# Initialize Firebase Admin
-cred = credentials.Certificate('firebase_config.json')
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://mi-project-d2fa2-default-rtdb.firebaseio.com'  # change this
-})
-
 # Configure Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-2.0-flash')
 
-FIREBASE_API_KEY = 'AIzaSyBsQmHeiqRRfEpO1culguTnOFHwNUzUcz8'  # from Firebase > Project Settings > General
+FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")  # from Firebase > Project Settings > General
 
 # Add this near your other Firebase initialization
 notifications_ref = db.reference('notifications')
