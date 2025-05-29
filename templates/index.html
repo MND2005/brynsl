@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6e48aa">
+    <title>Cosmo SL AI BOT</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header animate__animated animate__fadeIn">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
+           
+            <div class="language-selector">
+                <div class="language-wrapper">
+                    <select id="language" name="language" class="language-dropdown">
+                        <option value="sinhala">Sinhala</option>
+                        <option value="english">English</option>
+                        <option value="tamil">Tamil</option>
+                        <option value="add-new" class="add-option">+ Lang.</option>
+                    </select>
+                </div>
+
+                <!-- Popup modal -->
+                <div id="language-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <h3>Add New Language</h3>
+                        <input type="text" id="custom-language" placeholder="Enter language name">
+                        <div class="modal-buttons">
+                            <button id="add-language-btn">Add</button>
+                            <button onclick="closeLanguageModal()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            <a href="{{ url_for('profile') }}" class="profile-link">
+                <i class="fa fa-user" aria-hidden="true"></i>
+            </a>
+            <button id="clear-history" title="Clear history">
+                <i class="fa fa-trash-alt"></i>
+            </button>
+            <!-- Add this to your navigation bar -->
+           
+                <a class="nav-link notification-link" href="{{ url_for('user_notifications') }}">
+                    <div class="notification-icon-wrapper">
+                        <i class="fa fa-bell{% if unread_count > 0 %} glowing{% endif %}" aria-hidden="true"></i>
+                        {% if unread_count > 0 %}
+                        <span class="pulse-ring"></span>
+                        <span class="shine"></span>
+                        {% endif %}
+                    </div>
+                </a>
+            
+            <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i></a>
+            
+            <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </header>
+
+        <div class="preview-modal" id="preview-modal">
+            <div class="preview-content">
+                <img id="full-preview" src="" alt="Image preview">
+                <div class="preview-actions">
+                    <button class="cancel-preview" onclick="closePreview()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button class="send-preview" onclick="sendPreview()">
+                        <i class="fas fa-paper-plane"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message animate__animated animate__fadeIn">
+                <div class="message-content">
+                    <div class="message-sender">Cosmo SL AI BOT</div>
+                    <div class="message-text">Hello! I'm Cosmo SL AI BOT. Ask me anything or upload an image for analysis.</div>
+                    <div class="message-actions">
+                        <button class="copy-btn" onclick="copyMessage(this)"><i class="far fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <form id="question-form" class="message-form">
+                <div class="input-group">
+                    <textarea id="question" name="question" placeholder="Type your message..." rows="1"></textarea>
+                    <div class="input-buttons">
+                        <label for="image" class="file-upload">
+                            <i class="fas fa-image"></i>
+                            <input type="file" id="image" name="image" accept="image/*">
+                        </label>
+                        <button type="submit" class="send-button" onclick="sendPreview()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+    const languageSelector = document.getElementById('language');
+    const languageModal = document.getElementById('language-modal');
+    const customLanguageInput = document.getElementById('custom-language');
+    const addLanguageButton = document.getElementById('add-language-btn');
+
+    // Load saved language
+    const savedLanguage = localStorage.getItem('selectedLanguage');
+    if (savedLanguage && isLanguageInDropdown(savedLanguage)) {
+        languageSelector.value = savedLanguage;
+    }
+
+    // Load custom languages
+    const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
+    customLanguages.forEach(lang => addLanguageToDropdown(lang));
+
+    // Handle language change
+    languageSelector.addEventListener('change', function () {
+        if (this.value === 'add-new') {
+            openLanguageModal();
+        } else {
+            localStorage.setItem('selectedLanguage', this.value);
+            console.log('Language changed to:', this.value);
+        }
+    });
+
+    // Handle add language button in modal
+    addLanguageButton.addEventListener('click', function () {
+        const newLang = customLanguageInput.value.trim();
+        if (!newLang) {
+            showToast('Please enter a language name', 'warning');
+            return;
+        }
+
+        if (isLanguageInDropdown(newLang)) {
+            showToast('Language already exists', 'warning');
+            return;
+        }
+
+        addLanguageToDropdown(newLang);
+        saveCustomLanguage(newLang);
+        localStorage.setItem('selectedLanguage', newLang.toLowerCase());
+        languageSelector.value = newLang.toLowerCase();
+        showToast('Language added successfully!');
+        closeLanguageModal();
+    });
+
+    customLanguageInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addLanguageButton.click();
+        }
+    });
+
+    function openLanguageModal() {
+        customLanguageInput.value = '';
+        languageModal.style.display = 'flex';
+        customLanguageInput.focus();
+    }
+
+    function closeLanguageModal() {
+        languageModal.style.display = 'none';
+        languageSelector.value = localStorage.getItem('selectedLanguage') || 'Sinhala';
+    }
+
+    function isLanguageInDropdown(language) {
+        return Array.from(languageSelector.options).some(opt => opt.value.toLowerCase() === language.toLowerCase());
+    }
+
+    function addLanguageToDropdown(language) {
+        const addOption = document.querySelector('#language option[value="add-new"]');
+        const newOption = document.createElement('option');
+        newOption.value = language.toLowerCase();
+        newOption.textContent = language;
+        languageSelector.insertBefore(newOption, addOption);
+    }
+
+    function saveCustomLanguage(language) {
+        const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
+        if (!customLanguages.includes(language)) {
+            customLanguages.push(language);
+            localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
+        }
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast ${type}`;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+});
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMessages();
+            const languageSelector = document.getElementById('language');
+            const customLanguageInput = document.getElementById('custom-language');
+            const addLanguageButton = document.getElementById('add-language');
+
+            // Load saved language and custom languages from localStorage
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                languageSelector.value = savedLanguage;
+            }
+
+            const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
+            customLanguages.forEach(lang => addLanguageToDropdown(lang));
+
+            // Save language selection when changed
+            languageSelector.addEventListener('change', function() {
+                const selectedLanguage = this.value;
+                localStorage.setItem('selectedLanguage', selectedLanguage);
+                console.log('Language changed to:', selectedLanguage);
+            });
+
+            // Add custom language
+            addLanguageButton.addEventListener('click', function() {
+                const newLanguage = customLanguageInput.value.trim();
+                if (newLanguage && !isLanguageInDropdown(newLanguage)) {
+                    addLanguageToDropdown(newLanguage);
+                    saveCustomLanguage(newLanguage);
+                    customLanguageInput.value = '';
+                    showToast('Language added successfully!');
+                } else if (!newLanguage) {
+                    showToast('Please enter a language name', 'warning');
+                } else {
+                    showToast('Language already exists', 'warning');
+                }
+            });
+
+            // Allow Enter key to add language
+            customLanguageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addLanguageButton.click();
+                }
+            });
+        });
+
+        // Function to check if language already exists in dropdown
+        function isLanguageInDropdown(language) {
+            const languageSelector = document.getElementById('language');
+            return Array.from(languageSelector.options).some(option => option.value.toLowerCase() === language.toLowerCase());
+        }
+
+        // Function to add language to dropdown
+        function addLanguageToDropdown(language) {
+            const languageSelector = document.getElementById('language');
+            const option = document.createElement('option');
+            option.value = language.toLowerCase();
+            option.textContent = language;
+            languageSelector.appendChild(option);
+        }
+
+        // Function to save custom language to localStorage
+        function saveCustomLanguage(language) {
+            const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
+            if (!customLanguages.includes(language)) {
+                customLanguages.push(language);
+                localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
+            }
+        }
+
+        // DOM elements
+        const form = document.getElementById('question-form');
+        const questionInput = document.getElementById('question');
+        const chatMessages = document.getElementById('chat-messages');
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('image-preview');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const toast = document.getElementById('toast');
+
+        // Global variable to track the image to send
+        let currentPreviewImage = null;
+
+        // Image input handler
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Image size should be less than 5MB', 'error');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentPreviewImage = e.target.result;
+                    document.getElementById('full-preview').src = currentPreviewImage;
+                    document.getElementById('preview-modal').style.display = 'flex';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Preview functions
+        function closePreview() {
+            document.getElementById('preview-modal').style.display = 'none';
+            imageInput.value = '';
+            currentPreviewImage = null;
+        }
+
+        function sendPreview() {
+            const messageText = questionInput.value.trim();
+            const language = document.getElementById('language').value;
+
+            if (!messageText && !currentPreviewImage) {
+                showToast('Please enter a message or select an image', 'warning');
+                return;
+            }
+
+            // Add user message to chat
+            addUserMessage(messageText, currentPreviewImage);
+
+            // Show typing indicator in the message area
+            showTypingIndicator();
+
+            // Prepare form data
+            const formData = new FormData();
+            if (messageText) formData.append('question', messageText);
+            if (imageInput.files[0]) formData.append('image', imageInput.files[0]);
+            formData.append('language', language);
+
+            // Close preview
+            closePreview();
+
+            // Clear inputs
+            questionInput.value = '';
+            imageInput.value = '';
+
+            // Send to server
+            fetch('/ask', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator before showing response
+                removeTypingIndicator();
+
+                if (data.success) {
+                    addBotMessage(data.response);
+                } else {
+                    addErrorMessage(data.error);
+                }
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                addErrorMessage(`Network error: ${error.message}`);
+            });
+        }
+
+        function showTypingIndicator() {
+            // Remove any existing typing indicator first
+            removeTypingIndicator();
+
+            const typingElement = document.createElement('div');
+            typingElement.className = 'message bot-message typing-indicator-message';
+            typingElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">Cosmo SL BOT</div>
+                    <div class="typing-message">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(typingElement);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            const existingTyping = document.querySelector('.typing-indicator-message');
+            if (existingTyping) {
+                existingTyping.remove();
+            }
+        }
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const userMessage = questionInput.value.trim();
+            const language = document.getElementById('language').value;
+
+            // Show typing indicator in the message area
+            showTypingIndicator();
+
+            try {
+                const formData = new FormData();
+                formData.append('question', userMessage);
+                formData.append('language', language);
+
+                if (imageInput.files[0]) {
+                    formData.append('image', imageInput.files[0]);
+                }
+
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Clear inputs
+                questionInput.value = '';
+                imageInput.value = '';
+                imagePreview.innerHTML = '';
+
+                // Remove typing indicator before showing response
+                removeTypingIndicator();
+
+                if (data.success) {
+                    addBotMessage(data.response);
+                } else {
+                    addErrorMessage(data.error);
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                addErrorMessage(`Network error: ${error.message}`);
+            }
+        });
+
+        // Enhanced message functions with image storage
+        function addUserMessage(text, imageUrl = null) {
+            let messageHtml = '';
+            let imageId = null;
+
+            if (text) {
+                messageHtml += `<div class="message-text">${text.replace(/\n/g, '<br>')}</div>`;
+            }
+
+            if (imageUrl) {
+                // Generate unique ID for the image
+                imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                messageHtml += `<div class="message-image"><img src="${imageUrl}" alt="Uploaded image" data-image-id="${imageId}"></div>`;
+            } else if (imageInput.files.length > 0) {
+                const file = imageInput.files[0];
+                imageUrl = URL.createObjectURL(file);
+                imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                messageHtml += `<div class="message-image"><img src="${imageUrl}" alt="Uploaded image" data-image-id="${imageId}"></div>`;
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message user-message animate__animated animate__fadeInRight';
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">You</div>
+                    ${messageHtml}
+                </div>
+            `;
+
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+
+            // Save the image to localStorage if it exists
+            if (imageUrl && imageId) {
+                saveImageToLocalStorage(imageId, imageUrl);
+            }
+
+            saveMessages();
+        }
+
+        function addBotMessage(text) {
+            removeTypingIndicator();
+
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message bot-message animate__animated animate__fadeInLeft';
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">Cosmo SL BOT</div>
+                    <div class="message-text">${text.replace(/\n/g, '<br>')}</div>
+                    <div class="message-actions">
+                        <button class="copy-btn" onclick="copyMessage(this)"><i class="far fa-copy"></i></button>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+            saveMessages();
+
+            typewriterEffect(messageElement.querySelector('.message-text'), text);
+        }
+
+        // Image storage functions
+        function saveImageToLocalStorage(imageId, imageData) {
+            try {
+                // Get existing images or create new object
+                const storedImages = JSON.parse(localStorage.getItem('chatImages') || '{}');
+
+                // Store the image with its ID
+                storedImages[imageId] = imageData;
+
+                // Save back to localStorage
+                localStorage.setItem('chatImages', JSON.stringify(storedImages));
+            } catch (e) {
+                console.error('Error saving image to localStorage:', e);
+            }
+        }
+
+        function getImageFromLocalStorage(imageId) {
+            try {
+                const storedImages = JSON.parse(localStorage.getItem('chatImages') || '{}');
+                return storedImages[imageId] || null;
+            } catch (e) {
+                console.error('Error retrieving image from localStorage:', e);
+                return null;
+            }
+        }
+
+        // Enhanced save/load messages with image handling
+        function saveMessages() {
+            try {
+                // Clone the messages container
+                const messagesClone = chatMessages.cloneNode(true);
+
+                // Replace image src with data-image-id references
+                const images = messagesClone.querySelectorAll('.message-image img');
+                images.forEach(img => {
+                    const imageId = img.getAttribute('data-image-id');
+                    if (imageId) {
+                        // Replace the src with just the ID reference
+                        img.setAttribute('src', `local:${imageId}`);
+                    }
+                });
+
+                // Save the modified HTML
+                localStorage.setItem('chatHistory', messagesClone.innerHTML);
+                localStorage.setItem('lastSaved', Date.now());
+            } catch (e) {
+                console.error('Error saving messages:', e);
+            }
+        }
+
+        function loadMessages() {
+            try {
+                const savedMessages = localStorage.getItem('chatHistory');
+                if (savedMessages) {
+                    // Create a temporary container to parse the HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = savedMessages;
+
+                    // Restore images from localStorage
+                    const images = tempDiv.querySelectorAll('.message-image img');
+                    images.forEach(img => {
+                        const src = img.getAttribute('src');
+                        if (src && src.startsWith('local:')) {
+                            const imageId = src.substring(6); // Remove 'local:' prefix
+                            const imageData = getImageFromLocalStorage(imageId);
+                            if (imageData) {
+                                img.setAttribute('src', imageData);
+                                img.setAttribute('data-image-id', imageId);
+                            } else {
+                                // Image not found in storage, show placeholder
+                                img.setAttribute('src', 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#eee"/><text x="50" y="50" font-family="Arial" font-size="10" text-anchor="middle" fill="#aaa">Image not found</text></svg>');
+                            }
+                        }
+                    });
+
+                    // Add the restored messages to the chat
+                    chatMessages.innerHTML = tempDiv.innerHTML;
+                    scrollToBottom();
+                }
+            } catch (e) {
+                console.error('Error loading messages:', e);
+            }
+        }
+
+        // Clean up localStorage when clearing history
+        function clearMessageHistory() {
+            localStorage.removeItem('chatHistory');
+            localStorage.removeItem('chatImages');
+            localStorage.removeItem('customLanguages');
+            localStorage.removeItem('lastSaved');
+            location.reload();
+        }
+
+        // Helper functions
+        function typewriterEffect(element, text) {
+            element.innerHTML = '';
+            let i = 0;
+            const speed = 20; // typing speed in ms
+
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                    scrollToBottom();
+                }
+            }
+
+            type();
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function copyMessage(button) {
+            const messageText = button.closest('.message-content').querySelector('.message-text').textContent;
+            navigator.clipboard.writeText(messageText).then(() => {
+                showToast('Copied to clipboard!');
+            }).catch(err => {
+                showToast('Failed to copy', 'error');
+            });
+        }
+
+        function clearImagePreview() {
+            imagePreview.innerHTML = '';
+            imageInput.value = '';
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type} animate__animated animate__fadeInUp`;
+
+            setTimeout(() => {
+                toast.classList.remove('animate__fadeInUp');
+                toast.classList.add('animate__fadeOutDown');
+            }, 3000);
+
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3500);
+        }
+
+        // Auto-resize textarea
+        questionInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Allow Shift+Enter for new line, Enter to submit
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        document.getElementById('clear-history').addEventListener('click', (e) => {
+            if (confirm('Are you sure you want to clear all chat history?')) {
+                clearMessageHistory();
+                showToast('Chat history cleared');
+            }
+        });
+    </script>
+</body>
+</html>

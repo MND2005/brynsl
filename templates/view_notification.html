@@ -1,0 +1,485 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --space-cadet: #1E1B4B;
+        --royal-blue: #191144;
+        --neon-blue: #4D4DFF;
+        --electric-blue: #6B8EFF;
+        --ice-blue: #A5C4FF;
+        --glass-white: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.15);
+        --glass-highlight: rgba(255, 255, 255, 0.2);
+        --text-primary: #F8FAFC;
+        --text-secondary: #E2E8F0;
+        --text-muted: #94A3B8;
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3);
+        --shadow-glow: 0 0 20px rgba(77, 77, 255, 0.4);
+        --transition-all: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+
+    body {
+        background:linear-gradient(45deg, #1a1a2e, #16213e);;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .card {
+        background: linear-gradient(135deg, var(--glass-white), rgba(30, 27, 75, 0.5));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg), inset 0 1px 0 var(--glass-highlight);
+        overflow: hidden;
+        position: relative;
+        transition: var(--transition-all);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+
+    .card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at center, rgba(109, 142, 255, 0.1), transparent 70%);
+        opacity: 0;
+        transition: var(--transition-all);
+    }
+
+    .card:hover::before {
+        opacity: 1;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, rgba(30, 27, 75, 0.7), rgba(58, 54, 219, 0.5));
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--neon-blue), transparent);
+    }
+
+    .card-header h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn {
+        padding: 0.65rem 1.75rem;
+        border-radius: 12px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition-all);
+        z-index: 1;
+        border: none;
+        box-shadow: 0 4px 15px rgba(58, 54, 219, 0.3);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--neon-blue), var(--royal-blue));
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 25px rgba(77, 77, 255, 0.5);
+    }
+
+    .btn-secondary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--electric-blue), var(--neon-blue));
+        opacity: 0;
+        transition: var(--transition-all);
+        z-index: -1;
+    }
+
+    .btn-secondary:hover::before {
+        opacity: 1;
+    }
+
+    .card-body {
+        padding: 2.5rem;
+    }
+
+    .card-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        position: relative;
+        display: inline-block;
+    }
+
+    .card-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: var(--neon-blue);
+        border-radius: 3px;
+        transition: var(--transition-all);
+    }
+
+    .card:hover .card-title::after {
+        width: 80px;
+    }
+
+    .card-subtitle {
+        color: var(--text-muted);
+        font-size: 1.05rem;
+        font-weight: 400;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        background: rgba(30, 27, 75, 0.4);
+        padding: 0.35rem 0.8rem;
+        border-radius: 8px;
+        border-left: 2px solid var(--neon-blue);
+    }
+
+    .card-text {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        background: rgba(30, 27, 75, 0.3);
+        border-radius: 12px;
+        border-left: 3px solid var(--electric-blue);
+    }
+
+    hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+        margin: 2rem 0;
+    }
+
+    .table-responsive {
+        margin-top: 2rem;
+        border-radius: 16px;
+        overflow: hidden;
+        background: rgba(30, 27, 75, 0.3);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: transparent;
+        margin: 0;
+    }
+
+    .table th {
+        background: linear-gradient(90deg, rgba(0, 29, 92, 0.856), rgba(30, 27, 75, 0.7));
+        color: var(--text-primary);
+        font-weight: 600;
+        padding: 1.2rem 1.5rem;
+        text-align: left;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .table td {
+        padding: 1.2rem 1.5rem;
+        background: linear-gradient(90deg, rgba(12, 12, 43, 0.7), rgba(30, 27, 75, 0.7));
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--glass-border);
+        position: relative;
+        transition: var(--transition-all);
+    }
+
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table tr:hover td {
+        background: rgba(77, 77, 255, 0.1);
+        transform: translateX(8px);
+    }
+
+    .table tr:hover td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .table tr:hover td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        transition: var(--transition-all);
+    }
+
+    .bg-success {
+        background: linear-gradient(135deg, #10B981, #059669);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bg-success::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            to bottom right,
+            rgba(255, 255, 255, 0.3),
+            rgba(255, 255, 255, 0)
+        );
+        transform: rotate(30deg);
+        animation: shine 3s infinite;
+    }
+
+    .bg-warning {
+        background: linear-gradient(135deg, #F59E0B, #D97706);
+        color: #1E1B4B !important;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    @keyframes shine {
+        0% {
+            transform: rotate(30deg) translate(-30%, -30%);
+        }
+        100% {
+            transform: rotate(30deg) translate(30%, 30%);
+        }
+    }
+
+    .statistics {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: rgba(30, 27, 75, 0.4);
+        backdrop-filter: blur(8px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--glass-border);
+        transition: var(--transition-all);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(77, 77, 255, 0.2);
+        border-color: var(--neon-blue);
+    }
+
+    .stat-card h6 {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card .value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        background: linear-gradient(90deg, var(--electric-blue), var(--neon-blue));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 0 1rem;
+            margin: 1rem auto;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.2rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+        }
+
+        .statistics {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            min-width: 100%;
+        }
+
+        .table th, .table td {
+            padding: 0.8rem;
+        }
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <h4>Notification Details</h4>
+                <a href="{{ url_for('admin_notifications') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Notifications
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">{{ notification.title }}</h5>
+            <h6 class="card-subtitle mb-2">Sent on {{ notification.created_at }}</h6>
+            <p class="card-text">{{ notification.message }}</p>
+            
+            <hr>
+            
+            <h5 class="mt-4" style="color: var(--electric-blue);">Recipient Status</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Received At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_id, user in users.items() %}
+                        <tr>
+                            <td>{{ user.get('name', 'Unknown User') }}</td>
+                            <td>{{ user.get('email', 'No email') }}</td>
+                            <td>
+                                {% if user_status[user_id].read %}
+                                <span class="badge bg-success">Read</span>
+                                {% else %}
+                                <span class="badge bg-warning">Unread</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user_status[user_id].timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                <h6 style="color: var(--text-muted); font-size: 1.1rem;">Delivery Statistics</h6>
+                <div class="statistics">
+                    <div class="stat-card">
+                        <h6>Total Sent</h6>
+                        <p class="value">{{ users|length }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h6>Read</h6>
+                        <p class="value">{{ user_status.values()|selectattr('read')|list|length }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h6>Unread</h6>
+                        <p class="value">{{ user_status.values()|rejectattr('read')|list|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add subtle animation to table rows when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        const rows = document.querySelectorAll('.table tbody tr');
+        rows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)';
+            row.style.transition = `all 0.4s ease-out ${index * 0.05}s`;
+            
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, 100);
+        });
+        
+        // Add pulse animation to stat cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %}

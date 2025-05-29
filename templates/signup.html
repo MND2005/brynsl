@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+        --primary-blue: #1a73e8;
+        --glow-blue: #4dabff;
+        --dark-bg: #0f0f13;
+        --darker-bg: #0a0a0c;
+        --card-bg: #1a1a24;
+        --text-primary: #f0f0f0;
+        --text-secondary: #b0b0c0;
+        --border-color: #2a2a3a;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 5px rgba(77, 171, 255, 0.5); }
+        50% { box-shadow: 0 0 20px rgba(77, 171, 255, 0.8); }
+        100% { box-shadow: 0 0 5px rgba(77, 171, 255, 0.5); }
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: var(--dark-bg);
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+        background-image: 
+            radial-gradient(circle at 25% 25%, rgba(26, 115, 232, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(26, 115, 232, 0.1) 0%, transparent 50%);
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .logo-container {
+        text-align: center;
+        margin-bottom: 5px; /* 5px gap */
+        animation: fadeIn 0.6s ease-out;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .company-logo {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        filter: drop-shadow(0 0 10px rgba(77, 171, 255, 0.5));
+    }
+    
+    .login-container {
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Rest of your existing CSS remains the same */
+    .login-card {
+        background-color: var(--card-bg);
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 2;
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(10px);
+        animation: fadeIn 0.6s ease-out 0.2s both;
+    }
+    
+    
+    .login-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(77, 171, 255, 0.1) 0%, transparent 70%);
+        z-index: -1;
+        animation: float 8s ease-in-out infinite;
+    }
+    
+    h2 {
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 24px;
+        font-weight: 600;
+        position: relative;
+    }
+    
+    h2::after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-blue), var(--glow-blue));
+        margin: 10px auto 0;
+        border-radius: 3px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: var(--darker-bg);
+        color: var(--text-primary);
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+    
+    input::placeholder {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
+        animation: pulseGlow 2s infinite;
+    }
+    
+    .signup-link {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    .signup-link a {
+        color: var(--glow-blue);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .signup-link a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 1px;
+        background: var(--glow-blue);
+        transition: width 0.3s ease;
+    }
+    
+    .signup-link a:hover::after {
+        width: 100%;
+    }
+    
+    .floating-icons {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .floating-icon {
+        position: absolute;
+        opacity: 0.1;
+        color: var(--glow-blue);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .floating-icon:nth-child(1) {
+        top: 10%;
+        left: 20%;
+        font-size: 24px;
+        animation-delay: 0s;
+    }
+    
+    .floating-icon:nth-child(2) {
+        top: 60%;
+        left: 80%;
+        font-size: 18px;
+        animation-delay: 2s;
+    }
+    
+    .floating-icon:nth-child(3) {
+        top: 30%;
+        left: 50%;
+        font-size: 22px;
+        animation-delay: 4s;
+    }
+
+    /* Mobile-specific adjustments */
+    @media (max-width: 480px) {
+         body {
+            padding: 20px;
+        }
+        
+         .logo-container {
+            margin-bottom: 5px; /* Maintain 5px gap on mobile */
+        }
+        
+        .company-logo {
+            max-width: 250px;
+        }
+        
+        .login-container {
+            max-width: 100%;
+        }
+        
+        .login-card {
+            padding: 25px 20px;
+            border-radius: 12px;
+        }
+        
+        h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        
+        input {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+        
+        button {
+            padding: 13px;
+            font-size: 15px;
+        }
+        
+        .signup-link {
+            font-size: 13px;
+        }
+        
+        .floating-icon {
+            display: none;
+        }
+    }
+
+    @media (max-width: 350px) {
+        .company-logo {
+            max-width: 200px;
+        }
+        
+        .login-card {
+            padding: 20px 15px;
+        }
+        
+        h2 {
+            font-size: 20px;
+        }
+        
+        input {
+            padding: 11px 13px;
+        }
+    }
+</style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="logo-container">
+        <!-- Replace with your actual logo image -->
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
+        
+    </div>
+    
+    <div class="login-container">
+        <div class="floating-icons">
+            <div class="floating-icon"><i class="fas fa-lock"></i></div>
+            <div class="floating-icon"><i class="fas fa-user-shield"></i></div>
+            <div class="floating-icon"><i class="fas fa-key"></i></div>
+        </div>
+        
+        <div class="login-card">
+            <h2>Welcome</h2>
+            <form method="POST">
+                <div class="form-group">
+                     <input type="text" name="name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" name="email" required placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" required placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <input type="date" name="birthday" placeholder="Birthday" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" name="phone" placeholder="Phone Number (e.g. +94771234567)" 
+                        pattern="^\+[0-9]{11,15}$" title="Please enter a valid international phone number" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+            
+            <div class="signup-link">
+                Don't have an account? <a href="{{ url_for('login') }}">Log In</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

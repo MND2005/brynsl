@@ -1,0 +1,323 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+<style>
+    /* General Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(45deg, #1a1a2e, #16213e);;
+    color: #e5e7eb;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Container Styling with Glassmorphism */
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-header h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Form Styling */
+.card-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #d1d5db;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.form-check-label {
+    color: #d1d5db;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* User Selection Scroll Area */
+#userSelection {
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+#userSelection[style*="display: none"] {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+}
+
+#userSelection[style*="display: block"] {
+    opacity: 1;
+    max-height: 300px;
+}
+
+.border {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Button Styling */
+.btn-primary {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* List Group Styling */
+.list-group-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    padding: 1.5rem;
+    color: #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.list-group-item h5 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.list-group-item p {
+    font-size: 0.9rem;
+    color: #d1d5db;
+}
+
+.list-group-item small {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+}
+
+/* Animation for Page Load */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.container > * {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.container > *:nth-child(1) { animation-delay: 0.1s; }
+.container > *:nth-child(2) { animation-delay: 0.2s; }
+</style>
+<div class="container mt-4">
+    <h2>Admin Notifications</h2>
+    
+    <!-- Notification Creation Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Create New Notification</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_notifications') }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Send To</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="send_to" id="send_all" value="all" checked>
+                        <label class="form-check-label" for="send_all">
+                            All Users
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="send_to" id="send_selected" value="selected">
+                        <label class="form-check-label" for="send_selected">
+                            Selected Users
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="mb-3" id="userSelection" style="display: none;">
+                    <label class="form-label">Select Users</label>
+                    <div style="max-height: 200px; overflow-y: auto;" class="border p-2">
+                        {% for user_id, user in users.items() %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="selected_users[]" value="{{ user_id }}" id="user_{{ user_id }}">
+                            <label class="form-check-label" for="user_{{ user_id }}">
+                                {{ user.get('name', 'No name') }} ({{ user.get('email', 'No email') }})
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Send Notification</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Past Notifications -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Sent Notifications</h4>
+        </div>
+        <div class="card-body">
+            {% if notifications %}
+            <div class="list-group">
+                {% for notification_id, notification in notifications.items() %}
+                <a href="{{ url_for('view_notification', notification_id=notification_id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ notification.title }}</h5>
+                        <small>{{ notification.created_at }}</small>
+                    </div>
+                    <p class="mb-1">{{ notification.message|truncate(100) }}</p>
+                    <small>Sent by: {{ notification.created_by }}</small>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No notifications have been sent yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide user selection based on radio button
+document.addEventListener('DOMContentLoaded', function() {
+    const sendAll = document.getElementById('send_all');
+    const sendSelected = document.getElementById('send_selected');
+    const userSelection = document.getElementById('userSelection');
+    
+    sendAll.addEventListener('change', function() {
+        userSelection.style.display = this.checked ? 'none' : 'block';
+    });
+    
+    sendSelected.addEventListener('change', function() {
+        userSelection.style.display = this.checked ? 'block' : 'none';
+    });
+});
+</script>
+{% endblock %}

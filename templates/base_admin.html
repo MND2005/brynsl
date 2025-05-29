@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-color: #7367f0;
+            --primary-hover: #5d52d1;
+            --glass-bg: rgba(30, 30, 45, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
+            color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Glassmorphism Sidebar */
+        .sidebar {
+            position: fixed;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1.5rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header h4 {
+            font-weight: 600;
+            background: linear-gradient(to right, #fff, #b5b5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0;
+        }
+        
+        .nav-item {
+            position: relative;
+            margin: 0.25rem 1rem;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.5s;
+        }
+        
+        .nav-item:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background: var(--primary-color);
+            box-shadow: 0 4px 20px -5px var(--primary-color);
+        }
+        
+        .nav-link i {
+            width: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover i {
+            transform: scale(1.1);
+            color: var(--primary-color);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card-header {
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1.25rem 1.5rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Floating Action Button for Mobile Menu */
+        .menu-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px -5px var(--primary-color);
+            z-index: 1100;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        
+        .menu-toggle:hover {
+            background: var(--primary-hover);
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 992px) {
+            .menu-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-shield-lock me-2"></i>Admin Panel</h4>
+        </div>
+        <ul class="nav flex-column mt-3">
+            <li class="nav-item animate-fadeIn delay-1">
+                <a class="nav-link {{ 'active' if active_page == 'dashboard' }}" href="{{ url_for('admin_panel') }}">
+                    <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item animate-fadeIn delay-2">
+                <a class="nav-link {{ 'active' if active_page == 'notifications' }}" href="{{ url_for('admin_notifications') }}">
+                    <i class="bi bi-bell-fill me-2"></i>Notifications
+                    
+                </a>
+            </li>
+            <li class="nav-item animate-fadeIn delay-3">
+                <a class="nav-link {{ 'active' if active_page == 'ceo_view' }}" href="{{ url_for('ceo_view') }}">
+                    <i class="bi bi-graph-up me-2"></i>CEO View
+                </a>
+            </li>
+            <li class="nav-item mt-4 animate-fadeIn">
+                <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Sidebar Footer -->
+        <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-muted">
+            <small>v2.1.0</small>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show glass-card" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Mobile Menu Toggle -->
+    <div class="menu-toggle">
+        <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking on overlay
+        document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+            this.classList.remove('active');
+            document.querySelector('.sidebar').classList.remove('active');
+        });
+        
+        // Add active class to current page nav item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

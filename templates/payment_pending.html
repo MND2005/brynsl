@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Payment Required</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --dark-bg: #121212;
+            --darker-bg: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .payment-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        h2 {
+            color: var(--primary-blue);
+            margin-top: 0;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .notice {
+            background-color: rgba(26, 115, 232, 0.1);
+            border-left: 4px solid var(--primary-blue);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .bank-details {
+            margin-top: 25px;
+        }
+        
+        .bank {
+            background-color: var(--darker-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--primary-blue);
+        }
+        
+        .bank h3 {
+            margin-top: 0;
+            color: var(--primary-blue);
+        }
+        
+        .bank-detail {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .bank-detail .label {
+            font-weight: bold;
+            width: 120px;
+            color: var(--text-secondary);
+        }
+        
+        .payment-amount {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 25px 0;
+            color: var(--primary-blue);
+        }
+        
+        .steps {
+            margin: 25px 0;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background-color: var(--primary-blue);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .contact {
+            margin-top: 30px;
+            text-align: center;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+        
+        .logout-btn {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .divider {
+            border-top: 1px solid var(--border-color);
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-card">
+            <h2>Subscription Required</h2>
+            
+            <div class="notice">
+                To continue accessing our services, please complete the payment process.
+            </div>
+            
+            <div class="payment-amount">
+                Payment Amount: LKR 100.00
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Make the payment to one of our bank accounts below</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Send the payment receipt to our admin via WhatsApp or Email</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Your account will be activated within 24 hours</div>
+                </div>
+            </div>
+            
+            <div class="bank-details">
+                <h3>Bank Transfer Details</h3>
+                
+                <div class="bank">
+                    <h3>Commercial Bank</h3>
+                    <div class="bank-detail">
+                        <div class="label">Account Name:</div>
+                        <div>Tech Solutions Ltd</div>
+                    </div>
+                    <div class="bank-detail">
+                        <div class="label">Account Number:</div>
+                        <div>1234567890</div>
+                    </div>
+                    <div class="bank-detail">
+                        <div class="label">Branch:</div>
+                        <div>Colombo City</div>
+                    </div>
+                </div>
+                
+                <div class="bank">
+                    <h3>People's Bank</h3>
+                    <div class="bank-detail">
+                        <div class="label">Account Name:</div>
+                        <div>Tech Solutions Ltd</div>
+                    </div>
+                    <div class="bank-detail">
+                        <div class="label">Account Number:</div>
+                        <div>9876543210</div>
+                    </div>
+                    <div class="bank-detail">
+                        <div class="label">Branch:</div>
+                        <div>Kandy Main</div>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="contact">
+                <p>After payment, please send the receipt to:<br>
+                WhatsApp: +94 76 123 4567 or Email: payments@techsolutions.lk</p>
+                <p>Include your username in the message for faster processing.</p>
+            </div>
+
+            <div class="actions">
+                <a href="{{ url_for('profile') }}" class="logout-btn"><i class="fa fa-user" aria-hidden="true"></i> Profile</a>
+            </div>
+            
+            <div class="actions">
+                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout </a>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

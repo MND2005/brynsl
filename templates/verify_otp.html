@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify OTP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Include your existing CSS styles -->
+    <style>
+        /* Your existing styles here */
+        
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .resend-link {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .resend-link a {
+            color: var(--glow-blue);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
+    </div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <h2>Verify Your Phone</h2>
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+            <p style="text-align: center; margin-bottom: 20px; color: var(--text-secondary);">
+                We've sent a 6-digit code to {{ session['signup_phone'] }}
+            </p>
+            
+            <form method="POST" id="otp-form">
+                <div class="otp-container">
+                    <input type="text" name="otp" maxlength="6" class="otp-input" required autofocus>
+                </div>
+                <button type="submit">Verify & Continue</button>
+            </form>
+            
+            <div class="resend-link">
+                Didn't receive code? <a id="resend-otp">Resend OTP</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('resend-otp').addEventListener('click', function() {
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('New OTP sent successfully!');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+        
+        // Auto-submit when 6 digits are entered
+        document.querySelector('.otp-input').addEventListener('input', function(e) {
+            if (e.target.value.length === 6) {
+                document.getElementById('otp-form').submit();
+            }
+        });
+    </script>
+</body>
+</html>
