@@ -1,151 +1,331 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Required</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-blue: #1a73e8;
-            --dark-bg: #121212;
-            --darker-bg: #0a0a0a;
-            --card-bg: #1e1e1e;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --border-color: #333;
+            --neon-blue: #00ddeb;
+            --neon-purple: #bb00ff;
+            --dark-bg: #0d0d1a;
+            --card-bg: #141425;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0cc;
+            --border-color: #2a2a4d;
+            --gradient: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--text-primary);
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
         }
-        
+
+        body {
+            font-family: 'Roboto', 'Segoe UI', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% 50%, rgba(0, 221, 235, 0.1), transparent 70%);
+        }
+
         .container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 15px;
+            animation: fadeIn 0.8s ease-out;
         }
-        
+
         .payment-card {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            margin-bottom: 30px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(0, 221, 235, 0.2);
+            transform: translateY(30px);
+            opacity: 0;
+            animation: slideUp 0.7s ease-out forwards;
+            animation-delay: 0.3s;
         }
-        
+
         h2 {
-            color: var(--primary-blue);
-            margin-top: 0;
-            font-size: 28px;
+            font-size: clamp(22px, 4.5vw, 26px);
             text-align: center;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: var(--gradient);
+            transform: translateX(-50%);
+            animation: expandWidth 1s ease-out forwards;
+        }
+
         .notice {
-            background-color: rgba(26, 115, 232, 0.1);
-            border-left: 4px solid var(--primary-blue);
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 0 4px 4px 0;
+            background: rgba(0, 221, 235, 0.15);
+            border-left: 4px solid var(--neon-blue);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 0 10px 10px 0;
+            transform: translateX(-15px);
+            opacity: 0;
+            animation: slideIn 0.6s ease-out forwards;
+            animation-delay: 0.5s;
+            font-size: clamp(14px, 3.5vw, 15px);
         }
-        
+
         .bank-details {
-            margin-top: 25px;
+            margin-top: 20px;
         }
-        
+
         .bank {
-            background-color: var(--darker-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 3px solid var(--primary-blue);
+            background: rgba(20, 20, 37, 0.8);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            transform: scale(0.95);
+            opacity: 0;
+            animation: popIn 0.5s ease-out forwards;
         }
-        
+
+        .bank:nth-child(1) { animation-delay: 0.7s; }
+        .bank:nth-child(2) { animation-delay: 0.8s; }
+
         .bank h3 {
-            margin-top: 0;
-            color: var(--primary-blue);
+            font-size: clamp(16px, 3.8vw, 18px);
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
         }
-        
+
         .bank-detail {
             display: flex;
             margin-bottom: 8px;
+            font-size: clamp(13px, 3.2vw, 14px);
         }
-        
+
         .bank-detail .label {
-            font-weight: bold;
-            width: 120px;
+            font-weight: 600;
+            width: clamp(90px, 25%, 110px);
             color: var(--text-secondary);
         }
-        
+
         .payment-amount {
-            font-size: 24px;
+            font-size: clamp(18px, 4.5vw, 22px);
             font-weight: bold;
             text-align: center;
-            margin: 25px 0;
-            color: var(--primary-blue);
+            margin: 20px 0;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
         }
-        
+
+        .payment-amount::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 221, 235, 0.3), transparent);
+            animation: neonShine 2.5s infinite;
+        }
+
         .steps {
-            margin: 25px 0;
+            margin: 20px 0;
         }
-        
+
         .step {
             display: flex;
-            margin-bottom: 15px;
             align-items: flex-start;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateX(-25px);
+            animation: slideIn 0.6s ease-out forwards;
         }
-        
+
+        .step:nth-child(1) { animation-delay: 0.9s; }
+        .step:nth-child(2) { animation-delay: 1s; }
+        .step:nth-child(3) { animation-delay: 1.1s; }
+
         .step-number {
-            background-color: var(--primary-blue);
-            color: white;
-            width: 24px;
-            height: 24px;
+            background: var(--gradient);
+            color: var(--dark-bg);
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-right: 15px;
+            margin-right: 12px;
             flex-shrink: 0;
-            font-size: 14px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
+        .step:hover .step-number {
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(0, 221, 235, 0.5);
+        }
+
         .contact {
-            margin-top: 30px;
+            margin-top: 25px;
             text-align: center;
-            font-style: italic;
             color: var(--text-secondary);
+            font-size: clamp(13px, 3.2vw, 14px);
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+            animation-delay: 1.3s;
         }
-        
+
         .logout-btn {
-            display: inline-block;
-            background-color: transparent;
-            color: var(--primary-blue);
-            border: 1px solid var(--primary-blue);
-            padding: 10px 20px;
-            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 8px 18px;
+            border-radius: 8px;
             text-decoration: none;
+            font-size: clamp(13px, 3.2vw, 14px);
             transition: all 0.3s ease;
-            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            margin: 8px;
         }
-        
+
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0.2;
+            transition: left 0.4s ease;
+        }
+
+        .logout-btn:hover::before {
+            left: 0;
+        }
+
         .logout-btn:hover {
-            background-color: var(--primary-blue);
-            color: white;
+            color: var(--dark-bg);
+            background: var(--gradient);
+            box-shadow: 0 0 15px rgba(0, 221, 235, 0.4);
+            transform: translateY(-3px);
         }
-        
+
         .actions {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
         }
-        
+
         .divider {
             border-top: 1px solid var(--border-color);
-            margin: 30px 0;
+            margin: 20px 0;
+            opacity: 0.5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-25px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes expandWidth {
+            from { width: 0; }
+            to { width: 80px; }
+        }
+
+        @keyframes neonShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px auto;
+                padding: 0 10px;
+            }
+
+            .payment-card {
+                padding: 12px;
+            }
+
+            .bank-detail {
+                flex-direction: column;
+            }
+
+            .bank-detail .label {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+
+            .logout-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h2 {
+                font-size: 18px;
+            }
+
+            .payment-amount {
+                font-size: 16px;
+            }
+
+            .step-number {
+                width: 18px;
+                height: 18px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -211,8 +391,6 @@
                         <div>Kandy Main</div>
                     </div>
                 </div>
-                
-                
             </div>
             
             <div class="divider"></div>
@@ -225,12 +403,8 @@
 
             <div class="actions">
                 <a href="{{ url_for('profile') }}" class="logout-btn"><i class="fa fa-user" aria-hidden="true"></i> Profile</a>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a>
             </div>
-            
-            <div class="actions">
-                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout </a>
-            </div>
-            
         </div>
     </div>
 </body>
