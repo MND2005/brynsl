@@ -102,14 +102,29 @@ def home():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        # Get all form data
         email = request.form['email']
         password = request.form['password']
         name = request.form['name']
-        birthday = request.form['birthday']
-        phone = request.form['phone']  # Add this line
+        day = request.form['birthday_day']
+        month = request.form['birthday_month']
+        year = request.form['birthday_year']
+        phone = request.form['phone']
+        education_level = request.form['education_level']
 
-        # Firebase authentication
+        # Combine birthday fields into YYYY-MM-DD format
+        try:
+            birthday = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+            # Validate date
+            datetime.datetime.strptime(birthday, "%Y-%m-%d")
+        except ValueError:
+            return render_template('error.html', error="Invalid date selected. Please choose a valid date.")
+
+        # Validate education level
+        valid_education_levels = ['O/L', 'A/L', 'University', 'Other']
+        if education_level not in valid_education_levels:
+            return render_template('error.html', error="Invalid education level selected.")
+
+        # Create user in Firebase Authentication
         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}"
         payload = {
             "email": email,
@@ -117,22 +132,23 @@ def signup():
             "returnSecureToken": True
         }
         res = requests.post(url, json=payload)
-        data = res.json()
+        res_data = res.json()
 
-        if 'error' in data:
-            error_message = data['error']['message']
+        if 'error' in res_data:
+            error_message = res_data['error']['message']
             return render_template('error.html', error=error_message)
 
-        uid = data['localId']
+        uid = res_data['localId']
         today = datetime.date.today()
         trial_ends = (datetime.datetime.now() + datetime.timedelta(minutes=3)).strftime("%Y-%m-%d %H:%M:%S")
 
-        # Save additional user data to Firebase (including phone)
+        # Store user data in Firebase Realtime Database
         db.reference(f'users/{uid}').set({
             "email": email,
             "name": name,
             "birthday": birthday,
-            "phone": phone,  # Add this line
+            "phone": phone,
+            "education_level": education_level,
             "activated": False,
             "signup_date": str(today),
             "trial_ends": str(trial_ends)
@@ -141,6 +157,8 @@ def signup():
         return redirect(url_for('login'))
 
     return render_template('signup.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
