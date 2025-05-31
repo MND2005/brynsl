@@ -8,7 +8,11 @@ import google.generativeai as genai
 import os
 import tempfile
 from functools import wraps
-
+from functools import wraps
+import random
+from mailersend import emails
+import smtplib
+from email.message import EmailMessage
 
 
 
@@ -35,6 +39,9 @@ firebase_admin.initialize_app(cred, {
     'databaseURL': os.getenv("FIREBASE_DATABASE_URL")
 })
 
+# Mailtrap API Configuration
+MAILTRAP_API_TOKEN = os.getenv("MAILTRAP_API_TOKEN")
+MAILTRAP_API_URL = os.getenv("MAILTRAP_API_URL")
 
 def is_admin(uid):
     """Check if user is admin"""
@@ -102,6 +109,11 @@ def home():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        # Check if this is an OTP verification request
+        if 'otp' in request.form:
+            return verify_otp(request)
+        
+        # Otherwise, handle new signup
         email = request.form['email']
         password = request.form['password']
         name = request.form['name']
@@ -111,52 +123,147 @@ def signup():
         phone = request.form['phone']
         education_level = request.form['education_level']
 
-        # Combine birthday fields into YYYY-MM-DD format
+        # Validate data (same as before)
         try:
             birthday = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
-            # Validate date
             datetime.datetime.strptime(birthday, "%Y-%m-%d")
         except ValueError:
-            return render_template('error.html', error="Invalid date selected. Please choose a valid date.")
+            return render_template('error.html', error="Invalid date.")
 
-        # Validate education level
-        valid_education_levels = ['O/L', 'A/L', 'University', 'Other']
-        if education_level not in valid_education_levels:
-            return render_template('error.html', error="Invalid education level selected.")
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+        otp_expiry = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
 
-        # Create user in Firebase Authentication
-        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}"
-        payload = {
+        # Store in session (temporarily)
+        session['temp_user'] = {
             "email": email,
             "password": password,
-            "returnSecureToken": True
-        }
-        res = requests.post(url, json=payload)
-        res_data = res.json()
-
-        if 'error' in res_data:
-            error_message = res_data['error']['message']
-            return render_template('error.html', error=error_message)
-
-        uid = res_data['localId']
-        today = datetime.date.today()
-        trial_ends = (datetime.datetime.now() + datetime.timedelta(minutes=3)).strftime("%Y-%m-%d %H:%M:%S")
-
-        # Store user data in Firebase Realtime Database
-        db.reference(f'users/{uid}').set({
-            "email": email,
             "name": name,
             "birthday": birthday,
             "phone": phone,
             "education_level": education_level,
+            "otp": otp,
+            "otp_expiry": otp_expiry
+        }
+
+        # Send OTP via Mailtrap API
+        try:
+            headers = {
+                "Authorization": f"Bearer {MAILTRAP_API_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "from": {"email": "hello@brynsl.com", "name": "BrynSL"},
+                "to": [{"email": email}],
+                "subject": "Your OTP Verification Code",
+                "text": f"Hello {name},\n\nYour OTP is: {otp}\n\nExpires in 15 minutes.",
+                "category": "OTP"
+            }
+            
+            response = requests.post(MAILTRAP_API_URL, headers=headers, json=payload)
+            
+            if response.status_code != 200:
+                session.pop('temp_user', None)
+                return render_template('error.html', error="Failed to send OTP. Please try again.")
+            
+        except Exception as e:
+            session.pop('temp_user', None)
+            return render_template('error.html', error=f"Email service error: {str(e)}")
+
+        return render_template('otp.html')  # Show OTP verification page
+
+    return render_template('signup.html')  # Show signup form
+
+def verify_otp(request):
+    temp_user = session.get('temp_user')
+    if not temp_user:
+        return render_template('error.html', error="Session expired. Please sign up again.")
+    
+    # Check OTP expiry
+    otp_expiry = datetime.datetime.strptime(temp_user['otp_expiry'], "%Y-%m-%d %H:%M:%S")
+    if datetime.datetime.now() > otp_expiry:
+        session.pop('temp_user', None)
+        return render_template('otp.html', error="OTP has expired. Please request a new one.")
+    
+    if request.form['otp'] != temp_user['otp']:
+        return render_template('otp.html', error="Invalid OTP. Try again.")
+    
+    # Proceed with Firebase signup
+    try:
+        # Create user in Firebase Authentication using REST API
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}"
+        payload = {
+            "email": temp_user['email'],
+            "password": temp_user['password'],
+            "returnSecureToken": True
+        }
+        response = requests.post(url, json=payload)
+        data = response.json()
+
+        if 'error' in data:
+            session.pop('temp_user', None)
+            return render_template('error.html', error=f"Signup failed: {data['error']['message']}")
+
+        # User created successfully, store details in Realtime Database
+        uid = data['localId']
+        user_ref = db.reference(f'users/{uid}')
+        user_ref.set({
+            "email": temp_user['email'],
+            "name": temp_user['name'],
+            "birthday": temp_user['birthday'],
+            "phone": temp_user['phone'],
+            "education_level": temp_user['education_level'],
+            "signup_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "trial_ends": (datetime.datetime.now() + datetime.timedelta(days=7)).strftime("%Y-%m-%d %H:%M:%S"),
             "activated": False,
-            "signup_date": str(today),
-            "trial_ends": str(trial_ends)
+            "is_admin": False,
+            "is_ceo": False
         })
 
+        # Clear temp_user from session
+        session.pop('temp_user', None)
         return redirect(url_for('login'))
 
-    return render_template('signup.html')
+    except Exception as e:
+        session.pop('temp_user', None)
+        return render_template('error.html', error=f"Signup failed: {str(e)}")
+
+# Resend OTP (API-based)
+@app.route('/resend_otp', methods=['POST'])
+def resend_otp():
+    temp_user = session.get('temp_user')
+    if not temp_user:
+        return redirect(url_for('signup'))
+    
+    new_otp = str(random.randint(100000, 999999))
+    temp_user['otp'] = new_otp
+    session['temp_user'] = temp_user
+
+    try:
+        headers = {
+            "Authorization": f"Bearer {MAILTRAP_API_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "from": {"email": "hello@brynsl.com", "name": "BrynSL"},
+            "to": [{"email": temp_user['email']}],
+            "subject": "Your New OTP Code",
+            "text": f"Hello {temp_user['name']},\n\nYour NEW OTP is: {new_otp}\n\nExpires in 15 minutes.",
+            "category": "OTP"
+        }
+        
+        response = requests.post(MAILTRAP_API_URL, headers=headers, json=payload)
+        
+        if response.status_code != 200:
+            return render_template('otp.html', error="Failed to resend OTP. Try again.")
+        
+        return render_template('otp.html', message="New OTP sent successfully!")
+    
+    except Exception as e:
+        return render_template('otp.html', error=f"Error resending OTP: {str(e)}")
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
