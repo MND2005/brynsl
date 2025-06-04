@@ -117,7 +117,7 @@ body {
     }
 .chat-header {
     padding: 15px 20px;
-    margin: 1px;
+    margin:0 1px 1px 1px;
     border-radius:0 0 10px 10px;
     background: linear-gradient(to right,#0D1B2A, #2C003E, #000933);
     color: white;
