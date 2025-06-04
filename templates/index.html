@@ -333,49 +333,83 @@
         });
         // Camera button handler
     cameraButton.addEventListener('click', async () => {
-        try {
-            // Request camera access
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            cameraVideo.srcObject = stream;
-            cameraModal.style.display = 'flex';
-        } catch (error) {
-            showToast('Failed to access camera: ' + error.message, 'error');
+    try {
+        // Check if getUserMedia is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('Camera access is not supported in this app. Please check app settings.', 'error');
+            console.error('getUserMedia not supported');
+            return;
         }
-    });
+
+        // Request camera access with mobile-friendly constraints
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment', // Prefer rear camera
+                width: { ideal: 1280 }, // Higher resolution for mobile
+                height: { ideal: 720 }
+            }
+        });
+        cameraVideo.srcObject = stream;
+        cameraModal.style.display = 'flex';
+        showToast('Camera accessed successfully', 'success');
+        console.log('Camera stream started');
+    } catch (error) {
+        let errorMessage = 'Failed to access camera';
+        if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera access denied. Please enable camera permissions in Settings > Apps > Bryn > Permissions.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera found on this device.';
+        } else if (error.name === 'SecurityError') {
+            errorMessage = 'Camera access requires a secure connection (HTTPS). Contact support.';
+        } else {
+            errorMessage = `Camera error: ${error.message}`;
+        }
+        showToast(errorMessage, 'error');
+        console.error('Camera access error:', error);
+    }
+});
 
     // Capture image from camera
     window.captureImage = function() {
-        try {
-            // Set canvas dimensions to match video
-            cameraCanvas.width = cameraVideo.videoWidth;
-            cameraCanvas.height = cameraVideo.videoHeight;
-            const context = cameraCanvas.getContext('2d');
-            context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
-
-            // Convert to data URL
-            currentPreviewImage = cameraCanvas.toDataURL('image/jpeg');
-            document.getElementById('full-preview').src = currentPreviewImage;
-            document.getElementById('preview-modal').style.display = 'flex';
-
-            // Save to localStorage
-            const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-            saveImageToLocalStorage(imageId, currentPreviewImage);
-
-            // Stop camera stream
-            closeCameraModal();
-        } catch (error) {
-            showToast('Failed to capture image: ' + error.message, 'error');
+    try {
+        if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+            showToast('Camera not ready. Please try again.', 'error');
+            console.error('Camera not ready for capture');
+            return;
         }
-    };
+        cameraCanvas.width = cameraVideo.videoWidth;
+        cameraCanvas.height = cameraVideo.videoHeight;
+        const context = cameraCanvas.getContext('2d');
+        context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+        // Convert to data URL with optimized quality
+        currentPreviewImage = cameraCanvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('full-preview').src = currentPreviewImage;
+        document.getElementById('preview-modal').style.display = 'flex';
+
+        // Save to localStorage
+        const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        saveImageToLocalStorage(imageId, currentPreviewImage);
+
+        // Stop camera stream
+        closeCameraModal();
+        showToast('Image captured successfully', 'success');
+        console.log('Image captured and saved to localStorage');
+    } catch (error) {
+        showToast('Failed to capture image: ' + error.message, 'error');
+        console.error('Capture error:', error);
+    }
+};
 
     // Close camera modal and stop stream
     window.closeCameraModal = function() {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-        cameraModal.style.display = 'none';
-    };
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        console.log('Camera stream stopped');
+    }
+    cameraModal.style.display = 'none';
+};
         // Preview functions
         function closePreview() {
             document.getElementById('preview-modal').style.display = 'none';
