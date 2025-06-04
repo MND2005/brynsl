@@ -101,6 +101,12 @@
                             <i class="fas fa-image"></i>
                             <input type="file" id="image" name="image" accept="image/*">
                         </label>
+                        <!-- Add camera button -->
+                         <label class="file-upload">
+                            <button type="button" id="camera-btn" class="camera-button" title="Take a photo">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </label>
                         <button type="submit" class="send-button" onclick="sendPreview()">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -109,7 +115,17 @@
             </form>
         </div>
     </div>
-
+    <!-- Add camera modal for capturing image -->
+    <div class="camera-modal" id="camera-modal" style="display: none;">
+        <div class="camera-content">
+            <video id="camera-video" autoplay></video>
+            <canvas id="camera-canvas" style="display: none;"></canvas>
+            <div class="camera-actions">
+                <button id="capture-btn" onclick="captureImage()">Capture</button>
+                <button onclick="closeCameraModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
     <div class="toast" id="toast">Copied to clipboard!</div>
 
     <script>
@@ -287,6 +303,11 @@
         const imagePreview = document.getElementById('image-preview');
         const typingIndicator = document.getElementById('typing-indicator');
         const toast = document.getElementById('toast');
+        const cameraButton = document.getElementById('camera-btn');
+        const cameraModal = document.getElementById('camera-modal');
+        const cameraVideo = document.getElementById('camera-video');
+        const cameraCanvas = document.getElementById('camera-canvas');
+        let stream = null;
 
         // Global variable to track the image to send
         let currentPreviewImage = null;
@@ -310,7 +331,51 @@
                 reader.readAsDataURL(file);
             }
         });
+        // Camera button handler
+    cameraButton.addEventListener('click', async () => {
+        try {
+            // Request camera access
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            cameraVideo.srcObject = stream;
+            cameraModal.style.display = 'flex';
+        } catch (error) {
+            showToast('Failed to access camera: ' + error.message, 'error');
+        }
+    });
 
+    // Capture image from camera
+    window.captureImage = function() {
+        try {
+            // Set canvas dimensions to match video
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            const context = cameraCanvas.getContext('2d');
+            context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+            // Convert to data URL
+            currentPreviewImage = cameraCanvas.toDataURL('image/jpeg');
+            document.getElementById('full-preview').src = currentPreviewImage;
+            document.getElementById('preview-modal').style.display = 'flex';
+
+            // Save to localStorage
+            const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            saveImageToLocalStorage(imageId, currentPreviewImage);
+
+            // Stop camera stream
+            closeCameraModal();
+        } catch (error) {
+            showToast('Failed to capture image: ' + error.message, 'error');
+        }
+    };
+
+    // Close camera modal and stop stream
+    window.closeCameraModal = function() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+        cameraModal.style.display = 'none';
+    };
         // Preview functions
         function closePreview() {
             document.getElementById('preview-modal').style.display = 'none';
@@ -318,56 +383,71 @@
             currentPreviewImage = null;
         }
 
-        function sendPreview() {
-            const messageText = questionInput.value.trim();
-            const language = document.getElementById('language').value;
+        // Modified sendPreview to handle camera-captured images
+    function sendPreview() {
+        const messageText = questionInput.value.trim();
+        const language = document.getElementById('language').value;
 
-            if (!messageText && !currentPreviewImage) {
-                showToast('Please enter a message or select an image', 'warning');
-                return;
-            }
-
-            // Add user message to chat
-            addUserMessage(messageText, currentPreviewImage);
-
-            // Show typing indicator in the message area
-            showTypingIndicator();
-
-            // Prepare form data
-            const formData = new FormData();
-            if (messageText) formData.append('question', messageText);
-            if (imageInput.files[0]) formData.append('image', imageInput.files[0]);
-            formData.append('language', language);
-
-            // Close preview
-            closePreview();
-
-            // Clear inputs
-            questionInput.value = '';
-            imageInput.value = '';
-
-            // Send to server
-            fetch('/ask', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remove typing indicator before showing response
-                removeTypingIndicator();
-
-                if (data.success) {
-                    addBotMessage(data.response);
-                } else {
-                    addErrorMessage(data.error);
-                }
-            })
-            .catch(error => {
-                removeTypingIndicator();
-                addErrorMessage(`Network error: ${error.message}`);
-            });
+        if (!messageText && !currentPreviewImage) {
+            showToast('Please enter a message or select/capture an image', 'warning');
+            return;
         }
 
+        // Add user message to chat
+        addUserMessage(messageText, currentPreviewImage);
+
+        // Show typing indicator
+        showTypingIndicator();
+
+        // Prepare form data
+        const formData = new FormData();
+        if (messageText) formData.append('question', messageText);
+        if (currentPreviewImage) {
+            // Convert data URL to Blob for sending
+            const blob = dataURLtoBlob(currentPreviewImage);
+            formData.append('image', blob, 'captured_image.jpg');
+        }
+        formData.append('language', language);
+
+        // Close preview
+        closePreview();
+
+        // Clear inputs
+        questionInput.value = '';
+        imageInput.value = '';
+        currentPreviewImage = null;
+
+        // Send to server
+        fetch('/ask', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            removeTypingIndicator();
+            if (data.success) {
+                addBotMessage(data.response);
+            } else {
+                addErrorMessage(data.error);
+            }
+        })
+        .catch(error => {
+            removeTypingIndicator();
+            addErrorMessage(`Network error: ${error.message}`);
+        });
+    }
+
+        // Helper function to convert data URL to Blob
+    function dataURLtoBlob(dataURL) {
+        const byteString = atob(dataURL.split(',')[1]);
+        const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeString });
+    }
         function showTypingIndicator() {
             // Remove any existing typing indicator first
             removeTypingIndicator();
