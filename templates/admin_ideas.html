@@ -1,0 +1,358 @@
+{% extends "base_admin.html" %}
+
+{% block content %}
+    <style>
+        :root {
+            --primary-color: #7367f0;
+            --primary-hover: #5d52d1;
+            --glass-bg: rgba(30, 30, 45, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+            --text-color: #f8f9fa;
+            --animation-duration: 0.6s;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #fff, #b5b5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            animation: glowText 2s ease-in-out infinite alternate;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: rgba(248, 249, 250, 0.8);
+            max-width: 85%;
+            margin: 0 auto;
+            opacity: 0;
+            animation: slideUp 0.8s ease forwards var(--animation-duration);
+        }
+
+        @keyframes glowText {
+            0% { text-shadow: 0 0 5px rgba(115, 103, 240, 0.3); }
+            100% { text-shadow: 0 0 15px rgba(115, 103, 240, 0.6); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            max-width: 450px;
+            padding: 0.75rem 1rem;
+            background: rgba(30, 30, 45, 0.85);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .search-container input::placeholder {
+            color: rgba(248, 249, 250, 0.5);
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 8px rgba(115, 103, 240, 0.5);
+            background: rgba(30, 30, 45, 0.9);
+        }
+
+        .search-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+            z-index: 0;
+        }
+
+        .search-container:hover::before {
+            left: 100%;
+        }
+
+        .ideas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .idea-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: cardEntrance var(--animation-duration) ease-out forwards;
+            animation-delay: calc(var(--card-index) * 0.1s);
+        }
+
+        .idea-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transition: left 0.7s ease;
+            z-index: 0;
+        }
+
+        .idea-card:hover::before {
+            left: 150%;
+        }
+
+        .idea-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .idea-card h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .idea-card p {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .idea-card .submitted-at {
+            font-size: 0.8rem;
+            color: rgba(248, 249, 250, 0.7);
+            position: relative;
+            z-index: 1;
+        }
+
+        .idea-card:hover h3,
+        .idea-card:hover p {
+            transform: translateX(5px);
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .total-ideas {
+            text-align: center;
+            font-size: 0.9rem;
+            color: rgba(248, 249, 250, 0.9);
+            margin: 2rem 0;
+            opacity: 0;
+            animation: slideUp 0.8s ease forwards calc(var(--animation-duration) + 0.3s);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 280px;
+            margin: 1rem auto;
+            background: var(--primary-color);
+            color: var(--text-color);
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .back-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+
+        .back-link:hover::before {
+            left: 100%;
+        }
+
+        .back-link:hover {
+            background: var(--primary-hover);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(115, 103, 240, 0.5);
+        }
+
+        .back-link i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover i {
+            transform: translateX(-5px) rotate(-10deg);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header h1 {
+                font-size: 1.7rem;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+                max-width: 95%;
+            }
+
+            .search-container input {
+                max-width: 400px;
+                font-size: 0.85rem;
+            }
+
+            .ideas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .idea-card {
+                padding: 1rem;
+            }
+
+            .back-link {
+                max-width: 240px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+                max-width: 100%;
+            }
+
+            .search-container input {
+                max-width: 100%;
+                font-size: 0.8rem;
+            }
+
+            .idea-card h3 {
+                font-size: 1rem;
+            }
+
+            .idea-card p {
+                font-size: 0.85rem;
+            }
+
+            .idea-card .submitted-at {
+                font-size: 0.75rem;
+            }
+
+            .back-link {
+                max-width: 200px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+
+    <div class="container">
+        <div class="header animate-fadeIn">
+            <h1>User Ideas</h1>
+            <p>Review and filter innovative ideas submitted by users.</p>
+              <p class="total-ideas animate-fadeIn delay-3">Total Ideas / Errors: {{ total_ideas }}</p>
+        </div>
+
+        <div class="search-container animate-fadeIn delay-1">
+            <input type="text" id="search" placeholder="Search by email or idea..." value="{{ search_query }}" oninput="filterCards()">
+        </div>
+
+        <div class="ideas-grid" id="ideas-grid">
+            {% for idea in ideas %}
+            <div class="idea-card animate-fadeIn delay-2" style="--card-index: {{ loop.index0 }};">
+                <h3>{{ idea.user_email }}</h3>
+                <p>{{ idea.description }}</p>
+                <p class="submitted-at">Submitted: {{ idea.submitted_at }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+      
+
+       
+    </div>
+
+    <script>
+        function filterCards() {
+            const input = document.getElementById('search').value.toLowerCase();
+            const cards = document.querySelectorAll('#ideas-grid .idea-card');
+
+            cards.forEach(card => {
+                const email = card.querySelector('h3').textContent.toLowerCase();
+                const idea = card.querySelector('p').textContent.toLowerCase();
+                if (email.includes(input) || idea.includes(input)) {
+                    card.style.display = '';
+                    card.style.animation = 'cardEntrance var(--animation-duration) ease-out forwards';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+{% endblock %}

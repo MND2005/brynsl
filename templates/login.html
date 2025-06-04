@@ -237,6 +237,23 @@
         font-size: 22px;
         animation-delay: 4s;
     }
+    .password-group {
+    position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .toggle-password:hover {
+        color: var(--glow-blue);
+    }
 
     /* Mobile-specific adjustments */
     @media (max-width: 480px) {
@@ -326,8 +343,9 @@
                 <div class="form-group">
                     <input type="email" name="email" required placeholder="Email">
                 </div>
-                <div class="form-group">
-                    <input type="password" name="password" required placeholder="Password">
+                <div class="form-group password-group">
+                    <input type="password" name="password" id="password" required placeholder="Password">
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword()"></i>
                 </div>
                 <button type="submit">Login</button>
             </form>
@@ -337,5 +355,21 @@
             </div>
         </div>
     </div>
+    <script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-password');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    </script>
 </body>
 </html>

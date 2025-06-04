@@ -13,6 +13,7 @@ import random
 from mailersend import emails
 import smtplib
 from email.message import EmailMessage
+import logging
 
 
 
@@ -20,6 +21,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+
 
 firebase_cred = {
     "type": "service_account",
@@ -42,6 +44,10 @@ firebase_admin.initialize_app(cred, {
 # Mailtrap API Configuration
 MAILTRAP_API_TOKEN = os.getenv("MAILTRAP_API_TOKEN")
 MAILTRAP_API_URL = os.getenv("MAILTRAP_API_URL")
+
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def is_admin(uid):
     """Check if user is admin"""
@@ -66,13 +72,13 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def is_admin(uid):
+def is_ceo(uid):
     """Check if user is ceo"""
     user_ref = db.reference(f'users/{uid}')
     user = user_ref.get()
     return user and user.get('is_ceo', False)
 
-def admin_required(f):
+def ceo_required(f):
     """Decorator to ensure ceo access"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -99,6 +105,7 @@ FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")  # from Firebase > Project Sett
 # Add this near your other Firebase initialization
 notifications_ref = db.reference('notifications')
 user_notifications_ref = db.reference('user_notifications')
+ideas_ref = db.reference('ideas')
 
 @app.route('/')
 def home():
@@ -472,7 +479,7 @@ def admin_activate_user():
 
 # Add this new route for CEO view
 @app.route('/ceo')
-@admin_required
+@ceo_required
 def ceo_view():
     users_ref = db.reference('users')
     all_users = users_ref.get() or {}
@@ -716,6 +723,251 @@ def profile():
                          signup_date=user.get('signup_date'),
                          status=status)
 
+@app.route('/ideas', methods=['GET', 'POST'])
+def ideas():
+    if 'uid' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        idea_text = request.form.get('idea')
+        if not idea_text:
+            return render_template('ideas.html', error='Idea cannot be empty!', dark_theme=True)
+        
+        uid = session['uid']
+        user_ref = db.reference(f'users/{uid}')
+        user = user_ref.get()
+        if not user:
+            return redirect(url_for('login'))
+
+        try:
+            idea_ref = ideas_ref.push()
+            idea_ref.set({
+                'user_id': uid,
+                'user_email': user.get('email'),
+                'idea': idea_text,
+                'submitted_at': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+            return render_template('ideas.html', message='Thank you for your idea!', dark_theme=True)
+        except Exception as e:
+            return render_template('ideas.html', error=f'Failed to submit idea: {str(e)}', dark_theme=True)
+
+    return render_template('ideas.html', dark_theme=True)
+    return render_template('ideas.html', dark_theme=True)
+
+@app.route('/admin/ideas')
+@admin_required
+def admin_ideas():
+    search_query = request.args.get('search', '').lower()
+    all_ideas = ideas_ref.get() or {}
+    users_ref = db.reference('users')
+    all_users = users_ref.get() or {}
+
+    ideas = []
+    for idea_id, idea_data in all_ideas.items():
+        # Check if idea_data is a dictionary
+        if not isinstance(idea_data, dict):
+            logger.warning(f"Skipping invalid idea entry with ID {idea_id}: expected dict, got {type(idea_data)}")
+            continue
+        # Safely access fields with .get()
+        if (search_query in idea_data.get('user_email', '').lower() or
+            search_query in idea_data.get('idea', '').lower()):
+            ideas.append({
+                'id': idea_id,
+                'user_email': idea_data.get('user_email', 'Unknown'),
+                'description': idea_data.get('idea'),  # Changed 'idea' to 'description' to match your data structure
+                'submitted_at': idea_data.get('submitted_at')
+            })
+
+    # Sort ideas by submitted_at (newest first), handling None values
+    ideas.sort(key=lambda x: x.get('submitted_at', ''), reverse=True)
+    total_ideas = len(all_ideas)
+
+    return render_template('admin_ideas.html', ideas=ideas, search_query=search_query, total_ideas=total_ideas)
+
+
+@app.route('/admin/user_stats')
+@ceo_required
+def user_stats():
+    users_ref = db.reference('users')
+    ideas_ref = db.reference('ideas')
+    transactions_ref = db.reference('admin_transactions')
+    notifications_ref = db.reference('notifications')
+    user_notifications_ref = db.reference('user_notifications')
+
+    all_users = users_ref.get() or {}
+    all_ideas = ideas_ref.get() or {}
+    all_transactions = transactions_ref.get() or {}
+    all_notifications = notifications_ref.get() or {}
+    all_user_notifications = user_notifications_ref.get() or {}
+
+    # Query parameters for filtering
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
+    status_filter = request.args.get('status', 'all')  # all, active, trial, expired
+
+    # Parse dates
+    now = datetime.datetime.now()
+    try:
+        start_dt = datetime.datetime.strptime(start_date, '%Y-%m-%d') if start_date else None
+        end_dt = datetime.datetime.strptime(end_date, '%Y-%m-%d') if end_date else None
+    except ValueError:
+        start_dt, end_dt = None, None
+
+    # User Metrics
+    total_users = len(all_users)
+    active_users = 0
+    trial_users = 0
+    expired_users = 0
+    signup_trend = {}
+    users_data = []
+
+    for uid, user in all_users.items():
+        user_signup_date = user.get('signup_date', '')
+        if start_dt and end_dt and user_signup_date:
+            try:
+                signup_dt = datetime.datetime.strptime(user_signup_date, "%Y-%m-%d %H:%M:%S")
+                if not (start_dt <= signup_dt <= end_dt):
+                    continue
+            except ValueError:
+                continue
+
+        # Determine user status
+        activated = user.get('activated', False)
+        trial_ends = user.get('trial_ends', '')
+        payment_date = user.get('payment_date', '')
+        paid_duration = int(user.get('paid_duration_minutes', 0))
+
+        status = 'expired'
+        if activated and payment_date and paid_duration > 0:
+            try:
+                payment_dt = datetime.datetime.strptime(payment_date, "%Y-%m-%d %H:%M:%S")
+                expiry_dt = payment_dt + datetime.timedelta(minutes=paid_duration)
+                if now <= expiry_dt:
+                    status = 'active'
+                    active_users += 1
+                else:
+                    db.reference(f'users/{uid}').update({"activated": False})
+                    status = 'expired'
+                    expired_users += 1
+            except ValueError:
+                status = 'expired'
+                expired_users += 1
+        else:
+            try:
+                trial_end_dt = datetime.datetime.strptime(trial_ends, "%Y-%m-%d %H:%M:%S")
+                if now <= trial_end_dt:
+                    status = 'trial'
+                    trial_users += 1
+                else:
+                    status = 'expired'
+                    expired_users += 1
+            except ValueError:
+                status = 'expired'
+                expired_users += 1
+
+        if status_filter != 'all' and status != status_filter:
+            continue
+
+        users_data.append({
+            'uid': uid,
+            'email': user.get('email', 'Unknown'),
+            'name': user.get('name', 'Unknown'),
+            'status': status,
+            'signup_date': user_signup_date
+        })
+
+        # Signup trend
+        if user_signup_date:
+            try:
+                signup_dt = datetime.datetime.strptime(user_signup_date, "%Y-%m-%d %H:%M:%S")
+                month_key = signup_dt.strftime("%Y-%m")
+                signup_trend[month_key] = signup_trend.get(month_key, 0) + 1
+            except ValueError:
+                pass
+
+    # Idea Metrics
+    total_ideas = len(all_ideas)
+    ideas_per_user = {}
+    idea_trend = {}
+    for idea_id, idea in all_ideas.items():
+        if not isinstance(idea, dict):
+            continue
+        idea_date = idea.get('submitted_at', '')
+        if start_dt and end_dt and idea_date:
+            try:
+                idea_dt = datetime.datetime.strptime(idea_date, "%Y-%m-%d %H:%M:%S")
+                if not (start_dt <= idea_dt <= end_dt):
+                    continue
+            except ValueError:
+                continue
+        user_id = idea.get('user_id', '')
+        ideas_per_user[user_id] = ideas_per_user.get(user_id, 0) + 1
+        if idea_date:
+            try:
+                idea_dt = datetime.datetime.strptime(idea_date, "%Y-%m-%d %H:%M:%S")
+                month_key = idea_dt.strftime("%Y-%m")
+                idea_trend[month_key] = idea_trend.get(month_key, 0) + 1
+            except ValueError:
+                pass
+
+    avg_ideas_per_user = sum(ideas_per_user.values()) / len(ideas_per_user) if ideas_per_user else 0
+
+    # Transaction Metrics (CEO-only view)
+    total_revenue = 0
+    recent_transactions = []
+    for trans_id, trans in all_transactions.items():
+        try:
+            amount = float(trans.get('amount', 0))
+            trans_date = trans.get('timestamp', '')
+            if start_dt and end_dt and trans_date:
+                trans_dt = datetime.datetime.strptime(trans_date, "%Y-%m-%d %H:%M:%S")
+                if not (start_dt <= trans_dt <= end_dt):
+                    continue
+            total_revenue += amount
+            recent_transactions.append({
+                'id': trans_id,
+                'user_email': trans.get('user_email', 'Unknown'),
+                'amount': amount,
+                'timestamp': trans_date
+            })
+        except (ValueError, KeyError):
+            continue
+    recent_transactions.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    recent_transactions = recent_transactions[:5]  # Limit to 5 recent
+
+    # Notification Metrics
+    total_notifications = len(all_notifications)
+    read_count = 0
+    delivered_count = 0
+    for user_id, user_nots in all_user_notifications.items():
+        for not_id, status in user_nots.items():
+            delivered_count += 1
+            if status.get('read', False):
+                read_count += 1
+    read_rate = (read_count / delivered_count * 100) if delivered_count > 0 else 0
+
+    # Prepare chart data
+    signup_trend_data = [{'month': k, 'count': v} for k, v in sorted(signup_trend.items())][-6:]  # Last 6 months
+    idea_trend_data = [{'month': k, 'count': v} for k, v in sorted(idea_trend.items())][-6:]
+
+    return render_template('user_stats.html',
+                         total_users=total_users,
+                         active_users=active_users,
+                         trial_users=trial_users,
+                         expired_users=expired_users,
+                         total_ideas=total_ideas,
+                         avg_ideas_per_user=round(avg_ideas_per_user, 2),
+                         total_revenue=total_revenue,
+                         recent_transactions=recent_transactions,
+                         total_notifications=total_notifications,
+                         read_rate=round(read_rate, 2),
+                         signup_trend=signup_trend_data,
+                         idea_trend=idea_trend_data,
+                         start_date=start_date,
+                         end_date=end_date,
+                         status_filter=status_filter,
+                         users=users_data,
+                         active_page='user_stats')
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))

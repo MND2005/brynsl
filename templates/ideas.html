@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Your Ideas | Cosmic Innovation Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e90ff; /* Cosmic blue */
+            --primary-dark: #104e8b;
+            --text: #e6e6fa; /* Light lavender for text */
+            --bg-dark: #0d0d1f; /* Deep cosmic navy */
+            --bg-darker: #080814; /* Near-black space */
+            --success: #40c4ff; /* Light blue for success */
+            --error: #ff5555; /* Soft red for error */
+            --accent: #ffffff33; /* Subtle star-like glow */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-darker);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: 
+                linear-gradient(180deg, var(--bg-darker) 0%, var(--bg-dark) 100%),
+                url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"%3E%3Ccircle fill="%23ffffff10" cx="100" cy="100" r="2"/%3E%3Ccircle fill="%23ffffff10" cx="300" cy="600" r="3"/%3E%3Ccircle fill="%23ffffff10" cx="1100" cy="200" r="2"/%3E%3Ccircle fill="%23ffffff10" cx="700" cy="800" r="2"/%3E%3Ccircle fill="%23ffffff10" cx="1300" cy="500" r="3"/%3E%3C/svg%3E');
+            background-attachment: fixed;
+            background-size: cover;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .glass-card {
+            background: rgba(13, 13, 31, 0.7);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            padding: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInCard 0.8s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 25px rgba(30, 144, 255, 0.2);
+        }
+
+        @keyframes fadeInCard {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 6px rgba(30, 144, 255, 0.3);
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: rgba(230, 230, 250, 0.85);
+            line-height: 1.6;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(8, 8, 20, 0.8);
+            border: 1px solid rgba(30, 144, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 130px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+        }
+
+        textarea::placeholder {
+            color: rgba(230, 230, 250, 0.5);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(30, 144, 255, 0.05);
+            box-shadow: 0 0 6px rgba(30, 144, 255, 0.3);
+        }
+
+        .btn, .back-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--text);
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(30, 144, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            touch-action: manipulation;
+        }
+
+        .btn::before, .back-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: left 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before, .back-link:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover, .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.4);
+        }
+
+        .btn:active, .back-link:active {
+            transform: translateY(0);
+            box-shadow: 0 0 8px rgba(30, 144, 255, 0.15);
+        }
+
+        .btn i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover i {
+            transform: translateX(4px);
+        }
+
+        .back-link {
+            margin-top: 20px;
+        }
+
+        .back-link i {
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover i {
+            transform: translateX(-4px);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out 0.3s forwards;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .message.success {
+            background: rgba(64, 196, 255, 0.1);
+            color: var(--success);
+            border-color: rgba(64, 196, 255, 0.15);
+        }
+
+        .message.error {
+            background: rgba(255, 85, 85, 0.1);
+            color: var(--error);
+            border-color: rgba(255, 85, 85, 0.15);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .star-field {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: twinkle 5s ease-in-out infinite;
+        }
+
+        .star-1 {
+            width: 2px;
+            height: 2px;
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .star-2 {
+            width: 3px;
+            height: 3px;
+            top: 60%;
+            left: 70%;
+            animation-delay: 1s;
+        }
+
+        .star-3 {
+            width: 2px;
+            height: 2px;
+            top: 80%;
+            left: 30%;
+            animation-delay: 2s;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: center;
+            }
+
+            .glass-card {
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 3px 15px rgba(0, 0, 0, 0.25);
+                backdrop-filter: blur(4px);
+            }
+
+            .header {
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+                max-width: 100%;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            label {
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+            }
+
+            textarea {
+                padding: 12px;
+                min-height: 120px;
+                font-size: 0.9rem;
+                border-radius: 6px;
+            }
+
+            .btn, .back-link {
+                padding: 14px 20px;
+                font-size: 1rem;
+                border-radius: 6px;
+            }
+
+            .btn i, .back-link i {
+                font-size: 0.9rem;
+            }
+
+            .message {
+                padding: 12px;
+                font-size: 0.9rem;
+                margin: 15px 0;
+            }
+
+            .back-link {
+                margin-top: 15px;
+            }
+
+            .star-1, .star-2, .star-3 {
+                width: 1.5px;
+                height: 1.5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 15px;
+                border-radius: 10px;
+                backdrop-filter: blur(3px);
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 0.85rem;
+            }
+
+            textarea {
+                padding: 10px;
+                min-height: 100px;
+                font-size: 0.85rem;
+            }
+
+            .btn, .back-link {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+                border-radius: 6px;
+            }
+
+            .message {
+                padding: 10px;
+                font-size: 0.85rem;
+                margin: 12px 0;
+            }
+
+            .back-link {
+                margin-top: 12px;
+            }
+
+            .star-1, .star-2, .star-3 {
+                width: 1px;
+                height: 1px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="glass-card">
+            <div class="star-field">
+                <div class="star star-1"></div>
+                <div class="star star-2"></div>
+                <div class="star star-3"></div>
+            </div>
+            
+            <div class="header">
+                <h1>Launch Your Vision</h1>
+                <p>Share your innovative ideas and bold suggestions or errors to shape the future. Let’s create something out of this world!</p>
+            </div>
+            
+            <form method="post">
+                <div class="form-group">
+                    <label for="idea">Your Ideas / Reports</label>
+                    <textarea id="idea" name="idea" placeholder="Describe your idea in detail... What problem does it solve? How would it work? Why is it unique?"></textarea>
+                </div>
+                
+                <button type="submit" class="btn">
+                    Submit Idea <i class="fas fa-rocket"></i>
+                </button>
+            </form>
+            
+            {% if message %}
+                <div class="message {{ 'success' if not error else 'error' }}">
+                    {{ message }}
+                </div>
+            {% endif %}
+            
+            <a href="{{ url_for('dashboard') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('profile') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+    </div>
+</body>
+</html>
