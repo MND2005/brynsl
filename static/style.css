@@ -78,9 +78,16 @@ body {
     margin-bottom: 10px;
 }
 .camera-actions button {
-    margin: 0 10px;
     padding: 10px 20px;
+    border-radius: 25px;
+    border: none;
     cursor: pointer;
+    font-weight: bold;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    background: #f1f3f4;
+    color: #3c4043;
 }
 .camera-button {
     background: none;
@@ -89,10 +96,29 @@ body {
     font-size: 1.2em;
     color: #0000008e;
 }
+.cropper-container {
+        max-width: 100%;
+        max-height: 400px;
+        overflow: hidden;
+    }
+    .cropper-container img {
+        max-width: 100%;
+    }
+    .preview-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    #full-preview {
+        display: block;
+        max-width: 100%;
+        max-height: 400px;
+    }
 .chat-header {
     padding: 15px 20px;
-    margin: 2px;
-    border-radius: 10px;
+    margin: 1px;
+    border-radius:0 0 10px 10px;
     background: linear-gradient(to right,#0D1B2A, #2C003E, #000933);
     color: white;
     display: flex;
@@ -358,6 +384,10 @@ textarea {
     display: flex;
     align-items: flex-end;
     gap: 10px;
+}
+
+#question{
+    max-height: fit-content;
 }
 
 textarea {

@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#6e48aa">
-    <title>Cosmo SL AI BOT</title>
+    <title>BRYN</title>
     <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 </head>
 <body>
     <div class="chat-container">
@@ -69,7 +71,16 @@
         <div class="preview-modal" id="preview-modal">
             <div class="preview-content">
                 <img id="full-preview" src="" alt="Image preview">
+                <div class="cropper-container" id="cropper-container" style="display: none;">
+                    <img id="cropper-image" src="" alt="Image to crop">
+                </div>
                 <div class="preview-actions">
+                    <button class="crop-btn cancel-preview" onclick="startCrop()" style="display: none;" id="crop-btn">
+                        <i class="fas fa-crop"></i> Crop
+                    </button>
+                    <button class="confirm-crop-btn cancel-preview" onclick="confirmCrop()" style="display: none;" id="confirm-crop-btn">
+                        <i class="fas fa-check"></i> Confirm 
+                    </button>
                     <button class="cancel-preview" onclick="closePreview()">
                         <i class="fas fa-times"></i> Cancel
                     </button>
@@ -83,8 +94,8 @@
         <div class="chat-messages" id="chat-messages">
             <div class="message bot-message animate__animated animate__fadeIn">
                 <div class="message-content">
-                    <div class="message-sender">Cosmo SL AI BOT</div>
-                    <div class="message-text">Hello! I'm Cosmo SL AI BOT. Ask me anything or upload an image for analysis.</div>
+                    <div class="message-sender">BRYN AI BOT</div>
+                    <div class="message-text">Hello! I'm BRYN AI BOT powered by CosmoSL Pvt. Ltd. Ask me anything or upload an image for analysis.</div>
                     <div class="message-actions">
                         <button class="copy-btn" onclick="copyMessage(this)"><i class="far fa-copy"></i></button>
                     </div>
@@ -193,6 +204,7 @@
         languageModal.style.display = 'none';
         languageSelector.value = localStorage.getItem('selectedLanguage') || 'Sinhala';
     }
+    
 
     function isLanguageInDropdown(language) {
         return Array.from(languageSelector.options).some(opt => opt.value.toLowerCase() === language.toLowerCase());
@@ -308,29 +320,32 @@
         const cameraVideo = document.getElementById('camera-video');
         const cameraCanvas = document.getElementById('camera-canvas');
         let stream = null;
+        let cropper = null;
 
         // Global variable to track the image to send
         let currentPreviewImage = null;
 
-        // Image input handler
-        imageInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('Image size should be less than 5MB', 'error');
-                    this.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    currentPreviewImage = e.target.result;
-                    document.getElementById('full-preview').src = currentPreviewImage;
-                    document.getElementById('preview-modal').style.display = 'flex';
-                }
-                reader.readAsDataURL(file);
+        // Modified image input handler to initialize crop button
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image size should be less than 5MB', 'error');
+                this.value = '';
+                return;
             }
-        });
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentPreviewImage = e.target.result;
+                const previewImg = document.getElementById('full-preview');
+                previewImg.src = currentPreviewImage;
+                document.getElementById('preview-modal').style.display = 'flex';
+                document.getElementById('crop-btn').style.display = 'inline-block'; // Show crop button
+            }
+            reader.readAsDataURL(file);
+        }
+    });
         // Camera button handler
     cameraButton.addEventListener('click', async () => {
     try {
@@ -371,35 +386,78 @@
 
     // Capture image from camera
     window.captureImage = function() {
-    try {
-        if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-            showToast('Camera not ready. Please try again.', 'error');
-            console.error('Camera not ready for capture');
-            return;
+        try {
+            if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+                showToast('Camera not ready. Please try again.', 'error');
+                console.error('Camera not ready for capture');
+                return;
+            }
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+            const context = cameraCanvas.getContext('2d');
+            context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+            currentPreviewImage = cameraCanvas.toDataURL('image/jpeg', 0.8);
+            const previewImg = document.getElementById('full-preview');
+            previewImg.src = currentPreviewImage;
+            document.getElementById('preview-modal').style.display = 'flex';
+            document.getElementById('crop-btn').style.display = 'inline-block'; // Show crop button
+
+            const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            saveImageToLocalStorage(imageId, currentPreviewImage);
+
+            closeCameraModal();
+            showToast('Image captured successfully', 'success');
+            console.log('Image captured and saved to localStorage');
+        } catch (error) {
+            showToast('Failed to capture image: ' + error.message, 'error');
+            console.error('Capture error:', error);
         }
-        cameraCanvas.width = cameraVideo.videoWidth;
-        cameraCanvas.height = cameraVideo.videoHeight;
-        const context = cameraCanvas.getContext('2d');
-        context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+    };
 
-        // Convert to data URL with optimized quality
-        currentPreviewImage = cameraCanvas.toDataURL('image/jpeg', 0.8);
-        document.getElementById('full-preview').src = currentPreviewImage;
-        document.getElementById('preview-modal').style.display = 'flex';
+    // Start cropping
+    window.startCrop = function() {
+        const previewImg = document.getElementById('full-preview');
+        const cropperImg = document.getElementById('cropper-image');
+        const cropperContainer = document.getElementById('cropper-container');
+        const cropBtn = document.getElementById('crop-btn');
+        const confirmCropBtn = document.getElementById('confirm-crop-btn');
 
-        // Save to localStorage
-        const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-        saveImageToLocalStorage(imageId, currentPreviewImage);
+        previewImg.style.display = 'none';
+        cropperContainer.style.display = 'block';
+        cropBtn.style.display = 'none';
+        confirmCropBtn.style.display = 'inline-block';
 
-        // Stop camera stream
-        closeCameraModal();
-        showToast('Image captured successfully', 'success');
-        console.log('Image captured and saved to localStorage');
-    } catch (error) {
-        showToast('Failed to capture image: ' + error.message, 'error');
-        console.error('Capture error:', error);
-    }
-};
+        cropperImg.src = currentPreviewImage;
+        cropper = new Cropper(cropperImg, {
+            aspectRatio: NaN, // Free aspect ratio
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+            zoomable: true,
+            scalable: true,
+            movable: true
+        });
+    };
+
+    // Confirm crop and update preview
+    window.confirmCrop = function() {
+        if (cropper) {
+            const croppedCanvas = cropper.getCroppedCanvas({
+                maxWidth: 1280,
+                maxHeight: 720,
+                imageSmoothingQuality: 'high'
+            });
+            currentPreviewImage = croppedCanvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('full-preview').src = currentPreviewImage;
+            document.getElementById('cropper-container').style.display = 'none';
+            document.getElementById('full-preview').style.display = 'block';
+            document.getElementById('crop-btn').style.display = 'inline-block';
+            document.getElementById('confirm-crop-btn').style.display = 'none';
+            cropper.destroy();
+            cropper = null;
+        }
+    };
 
     // Close camera modal and stop stream
     window.closeCameraModal = function() {
@@ -412,10 +470,18 @@
 };
         // Preview functions
         function closePreview() {
-            document.getElementById('preview-modal').style.display = 'none';
-            imageInput.value = '';
-            currentPreviewImage = null;
+        document.getElementById('preview-modal').style.display = 'none';
+        document.getElementById('cropper-container').style.display = 'none';
+        document.getElementById('full-preview').style.display = 'block';
+        document.getElementById('crop-btn').style.display = 'none';
+        document.getElementById('confirm-crop-btn').style.display = 'none';
+        imageInput.value = '';
+        currentPreviewImage = null;
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
         }
+    };
 
         // Modified sendPreview to handle camera-captured images
     function sendPreview() {
@@ -427,31 +493,22 @@
             return;
         }
 
-        // Add user message to chat
         addUserMessage(messageText, currentPreviewImage);
-
-        // Show typing indicator
         showTypingIndicator();
 
-        // Prepare form data
         const formData = new FormData();
         if (messageText) formData.append('question', messageText);
         if (currentPreviewImage) {
-            // Convert data URL to Blob for sending
             const blob = dataURLtoBlob(currentPreviewImage);
             formData.append('image', blob, 'captured_image.jpg');
         }
         formData.append('language', language);
 
-        // Close preview
         closePreview();
-
-        // Clear inputs
         questionInput.value = '';
         imageInput.value = '';
         currentPreviewImage = null;
 
-        // Send to server
         fetch('/ask', {
             method: 'POST',
             body: formData
@@ -470,7 +527,6 @@
             addErrorMessage(`Network error: ${error.message}`);
         });
     }
-
         // Helper function to convert data URL to Blob
     function dataURLtoBlob(dataURL) {
         const byteString = atob(dataURL.split(',')[1]);
@@ -490,7 +546,7 @@
             typingElement.className = 'message bot-message typing-indicator-message';
             typingElement.innerHTML = `
                 <div class="message-content">
-                    <div class="message-sender">Cosmo SL BOT</div>
+                    <div class="message-sender">BRYN AI BOT</div>
                     <div class="typing-message">
                         <div class="typing-dots">
                             <span></span>
@@ -604,7 +660,7 @@
             messageElement.className = 'message bot-message animate__animated animate__fadeInLeft';
             messageElement.innerHTML = `
                 <div class="message-content">
-                    <div class="message-sender">Cosmo SL BOT</div>
+                    <div class="message-sender">BRYN AI BOT</div>
                     <div class="message-text">${text.replace(/\n/g, '<br>')}</div>
                     <div class="message-actions">
                         <button class="copy-btn" onclick="copyMessage(this)"><i class="far fa-copy"></i></button>
