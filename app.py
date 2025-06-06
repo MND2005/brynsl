@@ -116,6 +116,11 @@ def home():
 def launch():
     return render_template('launch.html')
 
+@app.route('/login')
+def home():
+    if 'uid' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
