@@ -44,9 +44,6 @@
             <a href="{{ url_for('profile') }}" class="profile-link">
                 <i class="fa fa-user" aria-hidden="true"></i>
             </a>
-            <button id="clear-history" title="Clear history">
-                <i class="fa fa-trash-alt"></i>
-            </button>
             <!-- Add this to your navigation bar -->
            
                 <a class="nav-link notification-link" href="{{ url_for('user_notifications') }}">
@@ -58,6 +55,11 @@
                         {% endif %}
                     </div>
                 </a>
+
+            <button id="clear-history" title="Clear history">
+                <i class="fa fa-trash-alt"></i>
+            </button>
+            
             
             <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i></a>
             
@@ -76,10 +78,10 @@
                 </div>
                 <div class="preview-actions">
                     <button class="crop-btn cancel-preview" onclick="startCrop()" style="display: none;" id="crop-btn">
-                        <i class="fas fa-crop"></i> Crop
+                        <i class="fas fa-crop"></i> 
                     </button>
                     <button class="confirm-crop-btn cancel-preview" onclick="confirmCrop()" style="display: none;" id="confirm-crop-btn">
-                        <i class="fas fa-check"></i> Confirm 
+                        <i class="fas fa-check"></i> 
                     </button>
                     <button class="cancel-preview" onclick="closePreview()">
                         <i class="fas fa-times"></i> Cancel

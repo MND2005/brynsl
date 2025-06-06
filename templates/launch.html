@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrynsL | Launching Soon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #1e272e;
+            --light: #f5f6fa;
+            --accent: #fd79a8;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            transition: all 0.5s ease-out;
+        }
+        .countdown-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1.5rem;
+            min-width: 100px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
+        }
+        .countdown-box:hover {
+            transform: translateY(-10px);
+        }
+        .countdown-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .countdown-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+        }
+        #launch-button {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        #launch-button:not(.hidden) {
+            animation: fadeIn 0.5s forwards;
+        }
+        .hidden {
+            display: none;
+        }
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(108, 92, 231, 0.8), 0 0 30px rgba(253, 121, 168, 0.6);
+            }
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js" class="particles"></div>
+    <div class="container">
+        <h1>BRYN</h1>
+        <p>We're launching something amazing</p>
+        
+        <div class="countdown">
+            <div class="countdown-box">
+                <div id="days" class="countdown-value">00</div>
+                <div class="countdown-label">Days</div>
+            </div>
+            <div class="countdown-box">
+                <div id="hours" class="countdown-value">00</div>
+                <div class="countdown-label">Hours</div>
+            </div>
+            <div class="countdown-box">
+                <div id="minutes" class="countdown-value">00</div>
+                <div class="countdown-label">Minutes</div>
+            </div>
+            <div class="countdown-box">
+                <div id="seconds" class="countdown-value">00</div>
+                <div class="countdown-label">Seconds</div>
+            </div>
+        </div>
+        
+        <button id="launch-button" class="hidden">Launch Website</button>
+    </div>
+
+    <!-- Particles.js for background animation -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Set the launch date & time (Sri Lanka Time - UTC+5:30)
+        const launchDate = new Date("2025-06-11T19:30:00+05:30");
+
+        function updateCountdown() {
+            const now = new Date();
+            const sriLankaOffset = 5.5 * 60 * 60 * 1000; // UTC+5:30 in milliseconds
+            const nowSriLanka = new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + sriLankaOffset);
+            const distance = launchDate - nowSriLanka;
+
+            // Calculate days, hours, minutes, seconds
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Update the display
+            document.getElementById("days").textContent = days.toString().padStart(2, "0");
+            document.getElementById("hours").textContent = hours.toString().padStart(2, "0");
+            document.getElementById("minutes").textContent = minutes.toString().padStart(2, "0");
+            document.getElementById("seconds").textContent = seconds.toString().padStart(2, "0");
+
+            // If countdown ends, show launch button
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                const countdownElement = document.querySelector(".countdown");
+                countdownElement.style.opacity = "0";
+                countdownElement.style.transform = "translateY(-20px)";
+                setTimeout(() => {
+                    countdownElement.style.display = "none"; // Fully hide countdown
+                    document.getElementById("launch-button").classList.remove("hidden");
+                }, 500); // Match transition duration
+            }
+        }
+
+        // Initialize countdown
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown(); // Run immediately
+
+        // Launch button action
+        document.getElementById("launch-button").addEventListener("click", function() {
+            window.location.href = "https://brynsl.com"; // Change to your URL
+        });
+
+        // Particles.js config
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: "#a29bfe" },
+                shape: { type: "circle" },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: "#6c5ce7", opacity: 0.4, width: 1 },
+                move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out" }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "repulse" },
+                    onclick: { enable: true, mode: "push" }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

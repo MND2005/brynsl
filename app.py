@@ -21,7 +21,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-
+app.permanent_session_lifetime = datetime.timedelta(days=30)
 
 firebase_cred = {
     "type": "service_account",
@@ -107,11 +107,15 @@ notifications_ref = db.reference('notifications')
 user_notifications_ref = db.reference('user_notifications')
 ideas_ref = db.reference('ideas')
 
+
 @app.route('/')
 def home():
-    if 'uid' in session:
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return render_template('home.html')
+
+@app.route('/launch')
+def launch():
+    return render_template('launch.html')
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -292,6 +296,7 @@ def login():
             error_message = data['error']['message']
             return render_template('error.html', error=error_message)
         
+        session.permanent = True  # Make session persistent
         session['uid'] = data['localId']
         return redirect(url_for('dashboard'))
 
