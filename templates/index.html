@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0, minimum-scale=0.5">
     <meta name="theme-color" content="#6e48aa">
     <title>BRYN</title>
     <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
@@ -49,11 +49,9 @@
                         <button id="clear-history-settings" class="settings-link" title="Clear history">
                             <i class="fa fa-trash-alt"></i> Clear History
                         </button>
+                        
                         <a href="{{ url_for('ideas') }}" class="settings-link">
-                            <i class="fa fa-exclamation-triangle"></i>Report Errors
-                        </a>
-                        <a href="{{ url_for('ideas') }}" class="settings-link">
-                            <i class="fa fa-paper-plane"></i>Send Feedbacks
+                            <i class="fa fa-paper-plane"></i>Send Feedbacks / Errors
                         </a>
 
                         <a href="{{ url_for('logout') }}" class="settings-link logout-btn">

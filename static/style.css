@@ -19,6 +19,12 @@
     padding: 0;
     font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
+html, body {
+    touch-action: pinch-zoom;
+}
+.modal, .preview-modal, .camera-modal {
+    touch-action: pinch-zoom;
+}
 
 body {
     background-color: #f5f7fa;
