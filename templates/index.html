@@ -15,54 +15,66 @@
 <body>
     <div class="chat-container">
         <header class="chat-header animate__animated animate__fadeIn">
-            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
-           
-            <div class="language-selector">
-                <div class="language-wrapper">
-                    <select id="language" name="language" class="language-dropdown">
-                        <option value="sinhala">Sinhala</option>
-                        <option value="english">English</option>
-                        <option value="tamil">Tamil</option>
-                        <option value="add-new" class="add-option">+ Lang.</option>
-                    </select>
-                </div>
-
-                <!-- Popup modal -->
-                <div id="language-modal" class="modal" style="display: none;">
-                    <div class="modal-content">
-                        <h3>Add New Language</h3>
-                        <input type="text" id="custom-language" placeholder="Enter language name">
-                        <div class="modal-buttons">
-                            <button id="add-language-btn">Add</button>
-                            <button onclick="closeLanguageModal()">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-
-                
-            </div>
-            <a href="{{ url_for('profile') }}" class="profile-link">
-                <i class="fa fa-user" aria-hidden="true"></i>
-            </a>
-            <!-- Add this to your navigation bar -->
-           
-                <a class="nav-link notification-link" href="{{ url_for('user_notifications') }}">
-                    <div class="notification-icon-wrapper">
-                        <i class="fa fa-bell{% if unread_count > 0 %} glowing{% endif %}" aria-hidden="true"></i>
-                        {% if unread_count > 0 %}
-                        <span class="pulse-ring"></span>
-                        <span class="shine"></span>
-                        {% endif %}
-                    </div>
-                </a>
-
-            <button id="clear-history" title="Clear history">
-                <i class="fa fa-trash-alt"></i>
+            
+            <h1>BRYN</h1>
+            <!-- Settings button -->
+            <button id="settings-btn" title="Settings">
+                <i class="fas fa-ellipsis-v"></i>
             </button>
-            
-            
-            <a href="{{ url_for('logout') }}"><i class="fa fa-sign-out" aria-hidden="true"></i></a>
-            
+
+            <!-- Settings popup modal -->
+            <div id="settings-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Settings</h3>
+                    <div class="settings-options">
+                        <div class="language-selector">
+                            <div class="language-wrapper">
+                                <label for="language">Language:</label>
+                                <select id="language" name="language" class="language-dropdown">
+                                    <option value="sinhala">Sinhala</option>
+                                    <option value="english">English</option>
+                                    <option value="tamil">Tamil</option>
+                                    <option value="add-new" class="add-option">+ Add Language</option>
+                                </select>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('profile') }}" class="settings-link">
+                            <i class="fa fa-user" aria-hidden="true"></i> Profile
+                        </a>
+                        <a href="{{ url_for('user_notifications') }}" class="settings-link notification-link">
+                            <div class="notification-icon-wrapper">
+                                <i class="fa fa-bell{% if unread_count > 0 %} glowing{% endif %}" aria-hidden="true"></i>
+                                {% if unread_count > 0 %}
+                                <span class="pulse-ring"></span>
+                                <span class="shine"></span>
+                                {% endif %}
+                            </div> Notifications
+                        </a>
+                        <button id="clear-history-settings" class="settings-link" title="Clear history">
+                            <i class="fa fa-trash-alt"></i> Clear History
+                        </button>
+                        <a href="{{ url_for('logout') }}" class="settings-link logout-btn">
+                            <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
+                        </a>
+                    </div>
+                    <div class="modal-buttons">
+                        <button onclick="closeSettingsModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language popup modal (outside settings modal to avoid nesting issues) -->
+            <div id="language-modal" class="modal language-submodal" style="display: none;">
+                <div class="modal-content">
+                    <h3>Add New Language</h3>
+                    <input type="text" id="custom-language" placeholder="Enter language name">
+                    <div class="modal-buttons">
+                        <button id="add-language-btn">Add</button>
+                        <button onclick="closeLanguageModal()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="typing-indicator" id="typing-indicator" style="display: none;">
                 <span></span>
                 <span></span>
@@ -72,24 +84,30 @@
 
         <div class="preview-modal" id="preview-modal">
             <div class="preview-content">
+                <div class="preview-actions">
+                    <button class="crop-btn cancel-preview" onclick="startCrop()" style="display: none;" id="crop-btn">
+                        <i class="fas fa-crop"></i> Crop
+                    </button>
+                    <button class="confirm-crop-btn cancel-preview" onclick="confirmCrop()" style="display: none;" id="confirm-crop-btn">
+                        <i class="fas fa-check"></i> Confirm
+                    </button>
+                    <button class="cancel-preview" onclick="closePreview()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
                 <img id="full-preview" src="" alt="Image preview">
                 <div class="cropper-container" id="cropper-container" style="display: none;">
                     <img id="cropper-image" src="" alt="Image to crop">
+                    
                 </div>
+                
                 <div class="preview-actions">
-                    <button class="crop-btn cancel-preview" onclick="startCrop()" style="display: none;" id="crop-btn">
-                        <i class="fas fa-crop"></i> 
-                    </button>
-                    <button class="confirm-crop-btn cancel-preview" onclick="confirmCrop()" style="display: none;" id="confirm-crop-btn">
-                        <i class="fas fa-check"></i> 
-                    </button>
-                    <button class="cancel-preview" onclick="closePreview()">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
+                    <textarea id="question" name="question" placeholder="Type your message..." rows="1"></textarea>
                     <button class="send-preview" onclick="sendPreview()">
                         <i class="fas fa-paper-plane"></i> Send
                     </button>
                 </div>
+                
             </div>
         </div>
 
@@ -108,7 +126,6 @@
         <div class="chat-input">
             <form id="question-form" class="message-form">
                 <div class="input-group">
-                    <textarea id="question" name="question" placeholder="Type your message..." rows="1"></textarea>
                     <div class="input-buttons">
                         <label for="image" class="file-upload">
                             <i class="fas fa-image"></i>
@@ -120,6 +137,10 @@
                                 <i class="fas fa-camera"></i>
                             </button>
                         </label>
+                    </div>
+                    <textarea id="question" name="question" placeholder="Type your message..." rows="1"></textarea>
+                    <div class="input-buttons">
+                        
                         <button type="submit" class="send-button" onclick="sendPreview()">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -147,7 +168,19 @@
     const languageModal = document.getElementById('language-modal');
     const customLanguageInput = document.getElementById('custom-language');
     const addLanguageButton = document.getElementById('add-language-btn');
+    const settingsButton = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
 
+    settingsButton.addEventListener('click', function () {
+        settingsModal.style.display = 'flex';
+    });
+
+    document.getElementById('clear-history-settings').addEventListener('click', (e) => {
+        if (confirm('Are you sure you want to clear all chat history?')) {
+            clearMessageHistory();
+            showToast('Chat history cleared');
+        }
+    });
     // Load saved language
     const savedLanguage = localStorage.getItem('selectedLanguage');
     if (savedLanguage && isLanguageInDropdown(savedLanguage)) {
@@ -195,18 +228,45 @@
             addLanguageButton.click();
         }
     });
+    // Settings modal handling
+    settingsButton.addEventListener('click', function (e) {
+        e.preventDefault(); // Prevent any default behavior
+        settingsModal.style.display = 'flex';
+        setTimeout(() => settingsModal.classList.add('show'), 10); // Trigger animation
+    });
 
+    // Clear history from settings modal
+    document.getElementById('clear-history-settings').addEventListener('click', (e) => {
+        if (confirm('Are you sure you want to clear all chat history?')) {
+            clearMessageHistory();
+            showToast('Chat history cleared');
+            closeSettingsModal();
+        }
+    });
     function openLanguageModal() {
-        customLanguageInput.value = '';
+        settingsModal.style.display = 'none'; // Hide settings modal
+        settingsModal.classList.remove('show');
         languageModal.style.display = 'flex';
+        setTimeout(() => languageModal.classList.add('show'), 10); // Trigger animation
         customLanguageInput.focus();
     }
 
     function closeLanguageModal() {
-        languageModal.style.display = 'none';
-        languageSelector.value = localStorage.getItem('selectedLanguage') || 'Sinhala';
+        languageModal.classList.remove('show');
+        setTimeout(() => {
+            languageModal.style.display = 'none';
+            // Reopen settings modal after closing language modal
+            settingsModal.style.display = 'flex';
+            setTimeout(() => settingsModal.classList.add('show'), 10);
+            languageSelector.value = localStorage.getItem('selectedLanguage') || 'sinhala';
+        }, 300); // Match transition duration
     }
-    
+    function closeSettingsModal() {
+        settingsModal.classList.remove('show');
+        setTimeout(() => {
+            settingsModal.style.display = 'none';
+        }, 300); // Match transition duration
+    }
 
     function isLanguageInDropdown(language) {
         return Array.from(languageSelector.options).some(opt => opt.value.toLowerCase() === language.toLowerCase());
@@ -238,6 +298,11 @@
         }, 3000);
     }
 });
+
+        // Function to close settings modal
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             loadMessages();
