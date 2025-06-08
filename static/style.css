@@ -864,6 +864,7 @@ fa-times{
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
 }
 
+
 /* Updated Modal Dark Theme and UI/UX Enhancements */
 /* Updated Modal Styles */
 .modal {
@@ -874,7 +875,7 @@ fa-times{
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(8px);

@@ -15,14 +15,10 @@
 <body>
     <div class="chat-container">
         <header class="chat-header animate__animated animate__fadeIn">
-            
             <h1>BRYN</h1>
-            <!-- Settings button -->
             <button id="settings-btn" title="Settings">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
-
-            <!-- Settings popup modal -->
             <div id="settings-modal" class="modal" style="display: none;">
                 <div class="modal-content">
                     <h3>Settings</h3>
@@ -53,17 +49,22 @@
                         <button id="clear-history-settings" class="settings-link" title="Clear history">
                             <i class="fa fa-trash-alt"></i> Clear History
                         </button>
+                        <a href="{{ url_for('ideas') }}" class="settings-link">
+                            <i class="fa fa-exclamation-triangle"></i>Report Errors
+                        </a>
+                        <a href="{{ url_for('ideas') }}" class="settings-link">
+                            <i class="fa fa-paper-plane"></i>Send Feedbacks
+                        </a>
+
                         <a href="{{ url_for('logout') }}" class="settings-link logout-btn">
                             <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
                         </a>
                     </div>
                     <div class="modal-buttons">
-                        <button onclick="closeSettingsModal()">Close</button>
+                        <button onclick="closeSettingsModal(event)">Close</button>
                     </div>
                 </div>
             </div>
-
-            <!-- Language popup modal (outside settings modal to avoid nesting issues) -->
             <div id="language-modal" class="modal language-submodal" style="display: none;">
                 <div class="modal-content">
                     <h3>Add New Language</h3>
@@ -74,14 +75,12 @@
                     </div>
                 </div>
             </div>
-
             <div class="typing-indicator" id="typing-indicator" style="display: none;">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
         </header>
-
         <div class="preview-modal" id="preview-modal">
             <div class="preview-content">
                 <div class="preview-actions">
@@ -98,19 +97,17 @@
                 <img id="full-preview" src="" alt="Image preview">
                 <div class="cropper-container" id="cropper-container" style="display: none;">
                     <img id="cropper-image" src="" alt="Image to crop">
-                    
                 </div>
-                
+                <div class="preview-input">
+                    <textarea id="preview-question" name="preview-question" placeholder="Type your message..." rows="1"></textarea>
+                </div>
                 <div class="preview-actions">
-                    
                     <button class="send-preview" onclick="sendPreview()">
                         <i class="fas fa-paper-plane"></i> Send
                     </button>
                 </div>
-                
             </div>
         </div>
-
         <div class="chat-messages" id="chat-messages">
             <div class="message bot-message animate__animated animate__fadeIn">
                 <div class="message-content">
@@ -122,7 +119,6 @@
                 </div>
             </div>
         </div>
-
         <div class="chat-input">
             <form id="question-form" class="message-form">
                 <div class="input-group">
@@ -131,8 +127,7 @@
                             <i class="fas fa-image"></i>
                             <input type="file" id="image" name="image" accept="image/*">
                         </label>
-                        <!-- Add camera button -->
-                         <label class="file-upload">
+                        <label class="file-upload">
                             <button type="button" id="camera-btn" class="camera-button" title="Take a photo">
                                 <i class="fas fa-camera"></i>
                             </button>
@@ -140,8 +135,7 @@
                     </div>
                     <textarea id="question" name="question" placeholder="Type your message..." rows="1"></textarea>
                     <div class="input-buttons">
-                        
-                        <button type="submit" class="send-button" onclick="sendPreview()">
+                        <button type="submit" class="send-button">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -149,13 +143,13 @@
             </form>
         </div>
     </div>
-    <!-- Add camera modal for capturing image -->
     <div class="camera-modal" id="camera-modal" style="display: none;">
         <div class="camera-content">
             <video id="camera-video" autoplay></video>
             <canvas id="camera-canvas" style="display: none;"></canvas>
             <div class="camera-actions">
                 <button id="capture-btn" onclick="captureImage()">Capture</button>
+                <button id="flash-btn" onclick="toggleFlash()">Flash: Off</button>
                 <button onclick="closeCameraModal()">Cancel</button>
             </div>
         </div>
@@ -163,223 +157,195 @@
     <div class="toast" id="toast">Copied to clipboard!</div>
 
     <script>
+        // Define settingsModal globally
+        const settingsModal = document.getElementById('settings-modal');
+
+        // Define closeSettingsModal globally
+        function closeSettingsModal(event) {
+            if (event) event.stopPropagation(); // Prevent event bubbling
+            if (!settingsModal) {
+                console.error('Settings modal not found');
+                return;
+            }
+            console.log('Closing settings modal');
+            settingsModal.classList.remove('show');
+            settingsModal.style.display = 'none'; // Immediate hide as fallback
+            setTimeout(() => {
+                settingsModal.style.display = 'none'; // Ensure hidden after transition
+                console.log('Settings modal hidden');
+            }, 300);
+        }
+
+        const languageModal = document.getElementById('language-modal');
+        
+        function closeLanguageModal() {
+                languageModal.classList.remove('show');
+                setTimeout(() => {
+                    languageModal.style.display = 'none';
+                    settingsModal.style.display = 'flex';
+                    setTimeout(() => settingsModal.classList.add('show'), 10);
+                    languageSelector.value = localStorage.getItem('selectedLanguage') || 'sinhala';
+                }, 300);
+            }
+
         document.addEventListener('DOMContentLoaded', function () {
-    const languageSelector = document.getElementById('language');
-    const languageModal = document.getElementById('language-modal');
-    const customLanguageInput = document.getElementById('custom-language');
-    const addLanguageButton = document.getElementById('add-language-btn');
-    const settingsButton = document.getElementById('settings-btn');
-    const settingsModal = document.getElementById('settings-modal');
-
-    settingsButton.addEventListener('click', function () {
-        settingsModal.style.display = 'flex';
-    });
-
-    document.getElementById('clear-history-settings').addEventListener('click', (e) => {
-        if (confirm('Are you sure you want to clear all chat history?')) {
-            clearMessageHistory();
-            showToast('Chat history cleared');
-        }
-    });
-    // Load saved language
-    const savedLanguage = localStorage.getItem('selectedLanguage');
-    if (savedLanguage && isLanguageInDropdown(savedLanguage)) {
-        languageSelector.value = savedLanguage;
-    }
-
-    // Load custom languages
-    const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
-    customLanguages.forEach(lang => addLanguageToDropdown(lang));
-
-    // Handle language change
-    languageSelector.addEventListener('change', function () {
-        if (this.value === 'add-new') {
-            openLanguageModal();
-        } else {
-            localStorage.setItem('selectedLanguage', this.value);
-            console.log('Language changed to:', this.value);
-        }
-    });
-
-    // Handle add language button in modal
-    addLanguageButton.addEventListener('click', function () {
-        const newLang = customLanguageInput.value.trim();
-        if (!newLang) {
-            showToast('Please enter a language name', 'warning');
-            return;
-        }
-
-        if (isLanguageInDropdown(newLang)) {
-            showToast('Language already exists', 'warning');
-            return;
-        }
-
-        addLanguageToDropdown(newLang);
-        saveCustomLanguage(newLang);
-        localStorage.setItem('selectedLanguage', newLang.toLowerCase());
-        languageSelector.value = newLang.toLowerCase();
-        showToast('Language added successfully!');
-        closeLanguageModal();
-    });
-
-    customLanguageInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addLanguageButton.click();
-        }
-    });
-    // Settings modal handling
-    settingsButton.addEventListener('click', function (e) {
-        e.preventDefault(); // Prevent any default behavior
-        settingsModal.style.display = 'flex';
-        setTimeout(() => settingsModal.classList.add('show'), 10); // Trigger animation
-    });
-
-    // Clear history from settings modal
-    document.getElementById('clear-history-settings').addEventListener('click', (e) => {
-        if (confirm('Are you sure you want to clear all chat history?')) {
-            clearMessageHistory();
-            showToast('Chat history cleared');
-            closeSettingsModal();
-        }
-    });
-    function openLanguageModal() {
-        settingsModal.style.display = 'none'; // Hide settings modal
-        settingsModal.classList.remove('show');
-        languageModal.style.display = 'flex';
-        setTimeout(() => languageModal.classList.add('show'), 10); // Trigger animation
-        customLanguageInput.focus();
-    }
-
-    function closeLanguageModal() {
-        languageModal.classList.remove('show');
-        setTimeout(() => {
-            languageModal.style.display = 'none';
-            // Reopen settings modal after closing language modal
-            settingsModal.style.display = 'flex';
-            setTimeout(() => settingsModal.classList.add('show'), 10);
-            languageSelector.value = localStorage.getItem('selectedLanguage') || 'sinhala';
-        }, 300); // Match transition duration
-    }
-    function closeSettingsModal() {
-        settingsModal.classList.remove('show');
-        setTimeout(() => {
-            settingsModal.style.display = 'none';
-        }, 300); // Match transition duration
-    }
-
-    function isLanguageInDropdown(language) {
-        return Array.from(languageSelector.options).some(opt => opt.value.toLowerCase() === language.toLowerCase());
-    }
-
-    function addLanguageToDropdown(language) {
-        const addOption = document.querySelector('#language option[value="add-new"]');
-        const newOption = document.createElement('option');
-        newOption.value = language.toLowerCase();
-        newOption.textContent = language;
-        languageSelector.insertBefore(newOption, addOption);
-    }
-
-    function saveCustomLanguage(language) {
-        const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
-        if (!customLanguages.includes(language)) {
-            customLanguages.push(language);
-            localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
-        }
-    }
-
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = `toast ${type}`;
-        toast.style.display = 'block';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-    }
-});
-
-        // Function to close settings modal
-        function closeSettingsModal() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
             loadMessages();
             const languageSelector = document.getElementById('language');
+            const languageModal = document.getElementById('language-modal');
             const customLanguageInput = document.getElementById('custom-language');
-            const addLanguageButton = document.getElementById('add-language');
+            const addLanguageButton = document.getElementById('add-language-btn');
+            const settingsButton = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const previewQuestionInput = document.getElementById('preview-question');
 
-            // Load saved language and custom languages from localStorage
+            settingsButton.addEventListener('click', function () {
+                settingsModal.style.display = 'flex';
+            });
+
+            document.getElementById('clear-history-settings').addEventListener('click', (e) => {
+                if (confirm('Are you sure you want to clear all chat history?')) {
+                    clearMessageHistory();
+                    showToast('Chat history cleared');
+                }
+            });
+            function closeSettingsModal(event) {
+                if (event) event.stopPropagation(); // Prevent event bubbling
+                if (!settingsModal) {
+                    console.error('Settings modal not found');
+                    return;
+                }
+                console.log('Closing settings modal');
+                settingsModal.classList.remove('show');
+                settingsModal.style.display = 'none'; // Immediate hide as fallback
+                setTimeout(() => {
+                    settingsModal.style.display = 'none'; // Ensure hidden after transition
+                    console.log('Settings modal hidden');
+                }, 300);
+            }
+            // Load saved language
             const savedLanguage = localStorage.getItem('selectedLanguage');
-            if (savedLanguage) {
+            if (savedLanguage && isLanguageInDropdown(savedLanguage)) {
                 languageSelector.value = savedLanguage;
             }
 
+            // Load custom languages
             const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
             customLanguages.forEach(lang => addLanguageToDropdown(lang));
 
-            // Save language selection when changed
-            languageSelector.addEventListener('change', function() {
-                const selectedLanguage = this.value;
-                localStorage.setItem('selectedLanguage', selectedLanguage);
-                console.log('Language changed to:', selectedLanguage);
-            });
-
-            // Add custom language
-            addLanguageButton.addEventListener('click', function() {
-                const newLanguage = customLanguageInput.value.trim();
-                if (newLanguage && !isLanguageInDropdown(newLanguage)) {
-                    addLanguageToDropdown(newLanguage);
-                    saveCustomLanguage(newLanguage);
-                    customLanguageInput.value = '';
-                    showToast('Language added successfully!');
-                } else if (!newLanguage) {
-                    showToast('Please enter a language name', 'warning');
+            // Handle language change
+            languageSelector.addEventListener('change', function () {
+                if (this.value === 'add-new') {
+                    openLanguageModal();
                 } else {
-                    showToast('Language already exists', 'warning');
+                    localStorage.setItem('selectedLanguage', this.value);
+                    console.log('Language changed to:', this.value);
                 }
             });
 
-            // Allow Enter key to add language
-            customLanguageInput.addEventListener('keydown', function(e) {
+            // Handle add language button in modal
+            addLanguageButton.addEventListener('click', function () {
+                const newLang = customLanguageInput.value.trim();
+                if (!newLang) {
+                    showToast('Please enter a language name', 'warning');
+                    return;
+                }
+
+                if (isLanguageInDropdown(newLang)) {
+                    showToast('Language already exists', 'warning');
+                    return;
+                }
+
+                addLanguageToDropdown(newLang);
+                saveCustomLanguage(newLang);
+                localStorage.setItem('selectedLanguage', newLang.toLowerCase());
+                languageSelector.value = newLang.toLowerCase();
+                showToast('Language added successfully!');
+                closeLanguageModal();
+            });
+
+            customLanguageInput.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     addLanguageButton.click();
                 }
             });
-        });
 
-        // Function to check if language already exists in dropdown
-        function isLanguageInDropdown(language) {
-            const languageSelector = document.getElementById('language');
-            return Array.from(languageSelector.options).some(option => option.value.toLowerCase() === language.toLowerCase());
-        }
+             // Settings modal handling
+            settingsButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                settingsModal.style.display = 'flex';
+                setTimeout(() => settingsModal.classList.add('show'), 10);
+            });
 
-        // Function to add language to dropdown
-        function addLanguageToDropdown(language) {
-            const languageSelector = document.getElementById('language');
-            const option = document.createElement('option');
-            option.value = language.toLowerCase();
-            option.textContent = language;
-            languageSelector.appendChild(option);
-        }
-
-        // Function to save custom language to localStorage
-        function saveCustomLanguage(language) {
-            const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
-            if (!customLanguages.includes(language)) {
-                customLanguages.push(language);
-                localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
+            function openLanguageModal() {
+                settingsModal.style.display = 'none';
+                settingsModal.classList.remove('show');
+                languageModal.style.display = 'flex';
+                setTimeout(() => languageModal.classList.add('show'), 10);
+                customLanguageInput.focus();
             }
-        }
+
+            function closeLanguageModal() {
+                languageModal.classList.remove('show');
+                setTimeout(() => {
+                    languageModal.style.display = 'none';
+                    settingsModal.style.display = 'flex';
+                    setTimeout(() => settingsModal.classList.add('show'), 10);
+                    languageSelector.value = localStorage.getItem('selectedLanguage') || 'sinhala';
+                }, 300);
+            }
+
+           
+            function isLanguageInDropdown(language) {
+                return Array.from(languageSelector.options).some(opt => opt.value.toLowerCase() === language.toLowerCase());
+            }
+
+            function addLanguageToDropdown(language) {
+                const addOption = document.querySelector('#language option[value="add-new"]');
+                const newOption = document.createElement('option');
+                newOption.value = language.toLowerCase();
+                newOption.textContent = language;
+                languageSelector.insertBefore(newOption, addOption);
+            }
+
+            function saveCustomLanguage(language) {
+                const customLanguages = JSON.parse(localStorage.getItem('customLanguages') || '[]');
+                if (!customLanguages.includes(language)) {
+                    customLanguages.push(language);
+                    localStorage.setItem('customLanguages', JSON.stringify(customLanguages));
+                }
+            }
+
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = `toast ${type}`;
+                toast.style.display = 'block';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
+            }
+
+            // Auto-resize preview textarea
+            previewQuestionInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Allow Shift+Enter for new line, Enter to submit in preview textarea
+            previewQuestionInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendPreview();
+                }
+            });
+        });
 
         // DOM elements
         const form = document.getElementById('question-form');
         const questionInput = document.getElementById('question');
         const chatMessages = document.getElementById('chat-messages');
         const imageInput = document.getElementById('image');
-        const imagePreview = document.getElementById('image-preview');
         const typingIndicator = document.getElementById('typing-indicator');
         const toast = document.getElementById('toast');
         const cameraButton = document.getElementById('camera-btn');
@@ -388,227 +354,352 @@
         const cameraCanvas = document.getElementById('camera-canvas');
         let stream = null;
         let cropper = null;
-
-        // Global variable to track the image to send
         let currentPreviewImage = null;
 
-        // Modified image input handler to initialize crop button
-    imageInput.addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
-            if (file.size > 5 * 1024 * 1024) {
-                showToast('Image size should be less than 5MB', 'error');
-                this.value = '';
-                return;
-            }
+        // Image input handler
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Image size should be less than 5MB', 'error');
+                    this.value = '';
+                    return;
+                }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentPreviewImage = e.target.result;
-                const previewImg = document.getElementById('full-preview');
-                previewImg.src = currentPreviewImage;
-                document.getElementById('preview-modal').style.display = 'flex';
-                document.getElementById('crop-btn').style.display = 'inline-block'; // Show crop button
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentPreviewImage = e.target.result;
+                    const previewImg = document.getElementById('full-preview');
+                    previewImg.src = currentPreviewImage;
+                    document.getElementById('preview-modal').style.display = 'flex';
+                    document.getElementById('crop-btn').style.display = 'inline-block';
+                    document.getElementById('preview-question').value = questionInput.value;
+                };
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
+        });
+
         // Camera button handler
-    cameraButton.addEventListener('click', async () => {
+        cameraButton.addEventListener('click', async () => {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showToast('Camera access is not supported in this app. Please check app settings.', 'error');
+                    console.error('getUserMedia not supported');
+                    return;
+                }
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                cameraVideo.srcObject = stream;
+                cameraModal.style.display = 'flex';
+                showToast('Camera accessed successfully', 'success');
+                console.log('Camera stream started');
+            } catch (error) {
+                let errorMessage = 'Failed to access camera';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = 'Camera access denied. Please enable camera permissions in Settings > Apps > Bryn > Permissions.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = 'No camera found on this device.';
+                } else if (error.name === 'SecurityError') {
+                    errorMessage = 'Camera access requires a secure connection (HTTPS). Contact support.';
+                } else {
+                    errorMessage = `Camera error: ${error.message}`;
+                }
+                showToast(errorMessage, 'error');
+                console.error('Camera access error:', error);
+            }
+        });
+
+
+        // Autofocus on touch in the middle of the camera view
+cameraVideo.addEventListener('touchstart', async (event) => {
+    event.preventDefault(); // Prevent default touch behavior like scrolling
     try {
-        // Check if getUserMedia is supported
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showToast('Camera access is not supported in this app. Please check app settings.', 'error');
-            console.error('getUserMedia not supported');
+        if (!stream) {
+            showToast('Camera stream not active', 'error');
+            console.error('No active camera stream');
             return;
         }
 
-        // Request camera access with mobile-friendly constraints
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'environment', // Prefer rear camera
-                width: { ideal: 1280 }, // Higher resolution for mobile
-                height: { ideal: 720 }
-            }
-        });
-        cameraVideo.srcObject = stream;
-        cameraModal.style.display = 'flex';
-        showToast('Camera accessed successfully', 'success');
-        console.log('Camera stream started');
-    } catch (error) {
-        let errorMessage = 'Failed to access camera';
-        if (error.name === 'NotAllowedError') {
-            errorMessage = 'Camera access denied. Please enable camera permissions in Settings > Apps > Bryn > Permissions.';
-        } else if (error.name === 'NotFoundError') {
-            errorMessage = 'No camera found on this device.';
-        } else if (error.name === 'SecurityError') {
-            errorMessage = 'Camera access requires a secure connection (HTTPS). Contact support.';
-        } else {
-            errorMessage = `Camera error: ${error.message}`;
+        const videoRect = cameraVideo.getBoundingClientRect();
+        const touch = event.touches[0];
+        const touchX = touch.clientX - videoRect.left;
+        const touchY = touch.clientY - videoRect.top;
+
+        // Define the middle region (e.g., 50% of the video width and height)
+        const middleWidth = videoRect.width * 0.5;
+        const middleHeight = videoRect.height * 0.5;
+        const isMiddle = touchX > videoRect.width * 0.25 && touchX < videoRect.width * 0.75 &&
+                         touchY > videoRect.height * 0.25 && touchY < videoRect.height * 0.75;
+
+        if (!isMiddle) {
+            console.log('Touch outside middle region, ignoring autofocus');
+            return;
         }
-        showToast(errorMessage, 'error');
-        console.error('Camera access error:', error);
+
+        // Get the video track from the stream
+        const videoTrack = stream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities();
+
+        // Check if focusMode is supported (browser-specific, experimental)
+        if ('focusMode' in capabilities) {
+            try {
+                await videoTrack.applyConstraints({
+                    advanced: [{ focusMode: 'continuous' }] // Attempt continuous autofocus
+                });
+                showToast('Autofocus triggered', 'success');
+                console.log('Autofocus applied successfully');
+            } catch (err) {
+                showToast('Autofocus not supported or failed', 'error');
+                console.error('Error applying autofocus:', err);
+            }
+        } else {
+            // Fallback: Reapply constraints to reset focus (may trigger device autofocus)
+            try {
+                await videoTrack.applyConstraints({
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    focusMode: 'auto' // Fallback, may not work in all browsers
+                });
+                showToast('Autofocus attempted', 'success');
+                console.log('Autofocus fallback applied');
+            } catch (err) {
+                showToast('Autofocus not supported on this device', 'error');
+                console.error('Error in autofocus fallback:', err);
+            }
+        }
+    } catch (error) {
+        showToast('Error handling touch autofocus', 'error');
+        console.error('Touch autofocus error:', error);
     }
 });
 
-    // Capture image from camera
-    window.captureImage = function() {
-        try {
-            if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
-                showToast('Camera not ready. Please try again.', 'error');
-                console.error('Camera not ready for capture');
-                return;
-            }
-            cameraCanvas.width = cameraVideo.videoWidth;
-            cameraCanvas.height = cameraVideo.videoHeight;
-            const context = cameraCanvas.getContext('2d');
-            context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+// Track flash state
+let isFlashOn = false;
 
-            currentPreviewImage = cameraCanvas.toDataURL('image/jpeg', 0.8);
-            const previewImg = document.getElementById('full-preview');
-            previewImg.src = currentPreviewImage;
-            document.getElementById('preview-modal').style.display = 'flex';
-            document.getElementById('crop-btn').style.display = 'inline-block'; // Show crop button
-
-            const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-            saveImageToLocalStorage(imageId, currentPreviewImage);
-
-            closeCameraModal();
-            showToast('Image captured successfully', 'success');
-            console.log('Image captured and saved to localStorage');
-        } catch (error) {
-            showToast('Failed to capture image: ' + error.message, 'error');
-            console.error('Capture error:', error);
+// Toggle flashlight
+window.toggleFlash = async function () {
+    try {
+        if (!stream) {
+            showToast('Camera stream not active', 'error');
+            console.error('No active camera stream for flash');
+            return;
         }
-    };
 
-    // Start cropping
-    window.startCrop = function() {
-        const previewImg = document.getElementById('full-preview');
-        const cropperImg = document.getElementById('cropper-image');
-        const cropperContainer = document.getElementById('cropper-container');
-        const cropBtn = document.getElementById('crop-btn');
-        const confirmCropBtn = document.getElementById('confirm-crop-btn');
+        const videoTrack = stream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities();
 
-        previewImg.style.display = 'none';
-        cropperContainer.style.display = 'block';
-        cropBtn.style.display = 'none';
-        confirmCropBtn.style.display = 'inline-block';
+        // Check if torch is supported
+        if (!capabilities.torch) {
+            showToast('Flashlight not supported on this device', 'error');
+            console.error('Torch capability not available');
+            return;
+        }
 
-        cropperImg.src = currentPreviewImage;
-        cropper = new Cropper(cropperImg, {
-            aspectRatio: NaN, // Free aspect ratio
-            viewMode: 1,
-            autoCropArea: 0.8,
-            responsive: true,
-            zoomable: true,
-            scalable: true,
-            movable: true
+        // Toggle flash state
+        isFlashOn = !isFlashOn;
+        await videoTrack.applyConstraints({
+            advanced: [{ torch: isFlashOn }]
         });
-    };
 
-    // Confirm crop and update preview
-    window.confirmCrop = function() {
-        if (cropper) {
-            const croppedCanvas = cropper.getCroppedCanvas({
-                maxWidth: 1280,
-                maxHeight: 720,
-                imageSmoothingQuality: 'high'
-            });
-            currentPreviewImage = croppedCanvas.toDataURL('image/jpeg', 0.8);
-            document.getElementById('full-preview').src = currentPreviewImage;
-            document.getElementById('cropper-container').style.display = 'none';
-            document.getElementById('full-preview').style.display = 'block';
-            document.getElementById('crop-btn').style.display = 'inline-block';
-            document.getElementById('confirm-crop-btn').style.display = 'none';
-            cropper.destroy();
-            cropper = null;
-        }
-    };
+        // Update button text
+        const flashButton = document.getElementById('flash-btn');
+        flashButton.textContent = `Flash: ${isFlashOn ? 'On' : 'Off'}`;
+        showToast(`Flashlight turned ${isFlashOn ? 'on' : 'off'}`, 'success');
+        console.log(`Flashlight ${isFlashOn ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+        showToast('Failed to toggle flashlight', 'error');
+        console.error('Flash toggle error:', error);
+        isFlashOn = !isFlashOn; // Revert state on error
+        const flashButton = document.getElementById('flash-btn');
+        flashButton.textContent = `Flash: ${isFlashOn ? 'On' : 'Off'}`;
+    }
+};
 
-    // Close camera modal and stop stream
-    window.closeCameraModal = function() {
+// Update closeCameraModal to turn off flash when closing
+window.closeCameraModal = function () {
     if (stream) {
+        if (isFlashOn) {
+            const videoTrack = stream.getVideoTracks()[0];
+            videoTrack.applyConstraints({ advanced: [{ torch: false }] })
+                .catch(err => console.error('Error turning off flash:', err));
+            isFlashOn = false;
+            document.getElementById('flash-btn').textContent = 'Flash: Off';
+        }
         stream.getTracks().forEach(track => track.stop());
         stream = null;
         console.log('Camera stream stopped');
     }
     cameraModal.style.display = 'none';
 };
-        // Preview functions
-        function closePreview() {
-        document.getElementById('preview-modal').style.display = 'none';
-        document.getElementById('cropper-container').style.display = 'none';
-        document.getElementById('full-preview').style.display = 'block';
-        document.getElementById('crop-btn').style.display = 'none';
-        document.getElementById('confirm-crop-btn').style.display = 'none';
-        imageInput.value = '';
-        currentPreviewImage = null;
-        if (cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
-    };
 
-        // Modified sendPreview to handle camera-captured images
-    function sendPreview() {
-        const messageText = questionInput.value.trim();
-        const language = document.getElementById('language').value;
+        // Capture image from camera
+        window.captureImage = function() {
+            try {
+                if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
+                    showToast('Camera not ready. Please try again.', 'error');
+                    console.error('Camera not ready for capture');
+                    return;
+                }
+                cameraCanvas.width = cameraVideo.videoWidth;
+                cameraCanvas.height = cameraVideo.videoHeight;
+                const context = cameraCanvas.getContext('2d');
+                context.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
 
-        if (!messageText && !currentPreviewImage) {
-            showToast('Please enter a message or select/capture an image', 'warning');
-            return;
-        }
+                currentPreviewImage = cameraCanvas.toDataURL('image/jpeg', 0.8);
+                const previewImg = document.getElementById('full-preview');
+                previewImg.src = currentPreviewImage;
+                document.getElementById('preview-modal').style.display = 'flex';
+                document.getElementById('crop-btn').style.display = 'inline-block';
+                document.getElementById('preview-question').value = questionInput.value;
 
-        addUserMessage(messageText, currentPreviewImage);
-        showTypingIndicator();
+                const imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                saveImageToLocalStorage(imageId, currentPreviewImage);
 
-        const formData = new FormData();
-        if (messageText) formData.append('question', messageText);
-        if (currentPreviewImage) {
-            const blob = dataURLtoBlob(currentPreviewImage);
-            formData.append('image', blob, 'captured_image.jpg');
-        }
-        formData.append('language', language);
-
-        closePreview();
-        questionInput.value = '';
-        imageInput.value = '';
-        currentPreviewImage = null;
-
-        fetch('/ask', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            removeTypingIndicator();
-            if (data.success) {
-                addBotMessage(data.response);
-            } else {
-                addErrorMessage(data.error);
+                closeCameraModal();
+                showToast('Image captured successfully', 'success');
+                console.log('Image captured and saved to localStorage');
+            } catch (error) {
+                showToast('Failed to capture image: ' + error.message, 'error');
+                console.error('Capture error:', error);
             }
-        })
-        .catch(error => {
-            removeTypingIndicator();
-            addErrorMessage(`Network error: ${error.message}`);
-        });
-    }
-        // Helper function to convert data URL to Blob
-    function dataURLtoBlob(dataURL) {
-        const byteString = atob(dataURL.split(',')[1]);
-        const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-        return new Blob([ab], { type: mimeString });
-    }
-        function showTypingIndicator() {
-            // Remove any existing typing indicator first
-            removeTypingIndicator();
+        };
 
+        // Start cropping
+        window.startCrop = function() {
+            const previewImg = document.getElementById('full-preview');
+            const cropperImg = document.getElementById('cropper-image');
+            const cropperContainer = document.getElementById('cropper-container');
+            const cropBtn = document.getElementById('crop-btn');
+            const confirmCropBtn = document.getElementById('confirm-crop-btn');
+
+            previewImg.style.display = 'none';
+            cropperContainer.style.display = 'block';
+            cropBtn.style.display = 'none';
+            confirmCropBtn.style.display = 'inline-block';
+
+            cropperImg.src = currentPreviewImage;
+            cropper = new Cropper(cropperImg, {
+                aspectRatio: NaN,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                responsive: true,
+                zoomable: true,
+                scalable: true,
+                movable: true
+            });
+        };
+
+        // Confirm crop and update preview
+        window.confirmCrop = function() {
+            if (cropper) {
+                const croppedCanvas = cropper.getCroppedCanvas({
+                    maxWidth: 1280,
+                    maxHeight: 720,
+                    imageSmoothingQuality: 'high'
+                });
+                currentPreviewImage = croppedCanvas.toDataURL('image/jpeg', 0.8);
+                document.getElementById('full-preview').src = currentPreviewImage;
+                document.getElementById('cropper-container').style.display = 'none';
+                document.getElementById('full-preview').style.display = 'block';
+                document.getElementById('crop-btn').style.display = 'inline-block';
+                document.getElementById('confirm-crop-btn').style.display = 'none';
+                cropper.destroy();
+                cropper = null;
+            }
+        };
+
+        // Close camera modal and stop stream
+        window.closeCameraModal = function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                console.log('Camera stream stopped');
+            }
+            cameraModal.style.display = 'none';
+        };
+
+        // Close preview modal
+        window.closePreview = function() {
+            document.getElementById('preview-modal').style.display = 'none';
+            document.getElementById('cropper-container').style.display = 'none';
+            document.getElementById('full-preview').style.display = 'block';
+            document.getElementById('crop-btn').style.display = 'none';
+            document.getElementById('confirm-crop-btn').style.display = 'none';
+            imageInput.value = '';
+            document.getElementById('preview-question').value = '';
+            currentPreviewImage = null;
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        };
+
+        // Send preview message
+        window.sendPreview = function() {
+            const messageText = document.getElementById('preview-question').value.trim();
+            const language = document.getElementById('language').value;
+
+            if (!messageText && !currentPreviewImage) {
+                showToast('Please enter a message or select/capture an image', 'warning');
+                return;
+            }
+
+            addUserMessage(messageText, currentPreviewImage);
+            showTypingIndicator();
+
+            const formData = new FormData();
+            if (messageText) formData.append('question', messageText);
+            if (currentPreviewImage) {
+                const blob = dataURLtoBlob(currentPreviewImage);
+                formData.append('image', blob, 'captured_image.jpg');
+            }
+            formData.append('language', language);
+
+            closePreview();
+            questionInput.value = '';
+            document.getElementById('preview-question').value = '';
+            currentPreviewImage = null;
+
+            fetch('/ask', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                removeTypingIndicator();
+                if (data.success) {
+                    addBotMessage(data.response);
+                } else {
+                    addErrorMessage(data.error);
+                }
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                addErrorMessage(`Network error: ${error.message}`);
+            });
+        };
+
+        // Helper function to convert data URL to Blob
+        function dataURLtoBlob(dataURL) {
+            const byteString = atob(dataURL.split(',')[1]);
+            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: mimeString });
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            removeTypingIndicator();
             const typingElement = document.createElement('div');
             typingElement.className = 'message bot-message typing-indicator-message';
             typingElement.innerHTML = `
@@ -623,11 +714,11 @@
                     </div>
                 </div>
             `;
-
             chatMessages.appendChild(typingElement);
             scrollToBottom();
         }
 
+        // Remove typing indicator
         function removeTypingIndicator() {
             const existingTyping = document.querySelector('.typing-indicator-message');
             if (existingTyping) {
@@ -635,40 +726,38 @@
             }
         }
 
-        // Form submission
+        // Form submission for main textarea
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const userMessage = questionInput.value.trim();
             const language = document.getElementById('language').value;
 
-            // Show typing indicator in the message area
+            if (!userMessage) {
+                showToast('Please enter a message', 'warning');
+                return;
+            }
+
+            addUserMessage(userMessage);
             showTypingIndicator();
 
+            const formData = new FormData();
+            formData.append('question', userMessage);
+            formData.append('language', language);
+
+            if (imageInput.files[0]) {
+                formData.append('image', imageInput.files[0]);
+            }
+
+            questionInput.value = '';
+            imageInput.value = '';
+
             try {
-                const formData = new FormData();
-                formData.append('question', userMessage);
-                formData.append('language', language);
-
-                if (imageInput.files[0]) {
-                    formData.append('image', imageInput.files[0]);
-                }
-
                 const response = await fetch('/ask', {
                     method: 'POST',
                     body: formData
                 });
-
                 const data = await response.json();
-
-                // Clear inputs
-                questionInput.value = '';
-                imageInput.value = '';
-                imagePreview.innerHTML = '';
-
-                // Remove typing indicator before showing response
                 removeTypingIndicator();
-
                 if (data.success) {
                     addBotMessage(data.response);
                 } else {
@@ -680,7 +769,7 @@
             }
         });
 
-        // Enhanced message functions with image storage
+        // Add user message
         function addUserMessage(text, imageUrl = null) {
             let messageHtml = '';
             let imageId = null;
@@ -690,12 +779,6 @@
             }
 
             if (imageUrl) {
-                // Generate unique ID for the image
-                imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-                messageHtml += `<div class="message-image"><img src="${imageUrl}" alt="Uploaded image" data-image-id="${imageId}"></div>`;
-            } else if (imageInput.files.length > 0) {
-                const file = imageInput.files[0];
-                imageUrl = URL.createObjectURL(file);
                 imageId = 'img-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
                 messageHtml += `<div class="message-image"><img src="${imageUrl}" alt="Uploaded image" data-image-id="${imageId}"></div>`;
             }
@@ -708,11 +791,9 @@
                     ${messageHtml}
                 </div>
             `;
-
             chatMessages.appendChild(messageElement);
             scrollToBottom();
 
-            // Save the image to localStorage if it exists
             if (imageUrl && imageId) {
                 saveImageToLocalStorage(imageId, imageUrl);
             }
@@ -720,9 +801,9 @@
             saveMessages();
         }
 
+        // Add bot message
         function addBotMessage(text) {
             removeTypingIndicator();
-
             const messageElement = document.createElement('div');
             messageElement.className = 'message bot-message animate__animated animate__fadeInLeft';
             messageElement.innerHTML = `
@@ -734,30 +815,39 @@
                     </div>
                 </div>
             `;
-
             chatMessages.appendChild(messageElement);
             scrollToBottom();
             saveMessages();
-
             typewriterEffect(messageElement.querySelector('.message-text'), text);
         }
 
-        // Image storage functions
+        // Add error message
+        function addErrorMessage(error) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message error-message animate__animated animate__fadeIn';
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">Error</div>
+                    <div class="message-text">${error}</div>
+                </div>
+            `;
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+            saveMessages();
+        }
+
+        // Save image to localStorage
         function saveImageToLocalStorage(imageId, imageData) {
             try {
-                // Get existing images or create new object
                 const storedImages = JSON.parse(localStorage.getItem('chatImages') || '{}');
-
-                // Store the image with its ID
                 storedImages[imageId] = imageData;
-
-                // Save back to localStorage
                 localStorage.setItem('chatImages', JSON.stringify(storedImages));
             } catch (e) {
                 console.error('Error saving image to localStorage:', e);
             }
         }
 
+        // Get image from localStorage
         function getImageFromLocalStorage(imageId) {
             try {
                 const storedImages = JSON.parse(localStorage.getItem('chatImages') || '{}');
@@ -768,23 +858,17 @@
             }
         }
 
-        // Enhanced save/load messages with image handling
+        // Save messages to localStorage
         function saveMessages() {
             try {
-                // Clone the messages container
                 const messagesClone = chatMessages.cloneNode(true);
-
-                // Replace image src with data-image-id references
                 const images = messagesClone.querySelectorAll('.message-image img');
                 images.forEach(img => {
                     const imageId = img.getAttribute('data-image-id');
                     if (imageId) {
-                        // Replace the src with just the ID reference
                         img.setAttribute('src', `local:${imageId}`);
                     }
                 });
-
-                // Save the modified HTML
                 localStorage.setItem('chatHistory', messagesClone.innerHTML);
                 localStorage.setItem('lastSaved', Date.now());
             } catch (e) {
@@ -792,32 +876,27 @@
             }
         }
 
+        // Load messages from localStorage
         function loadMessages() {
             try {
                 const savedMessages = localStorage.getItem('chatHistory');
                 if (savedMessages) {
-                    // Create a temporary container to parse the HTML
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = savedMessages;
-
-                    // Restore images from localStorage
                     const images = tempDiv.querySelectorAll('.message-image img');
                     images.forEach(img => {
                         const src = img.getAttribute('src');
                         if (src && src.startsWith('local:')) {
-                            const imageId = src.substring(6); // Remove 'local:' prefix
+                            const imageId = src.substring(6);
                             const imageData = getImageFromLocalStorage(imageId);
                             if (imageData) {
                                 img.setAttribute('src', imageData);
                                 img.setAttribute('data-image-id', imageId);
                             } else {
-                                // Image not found in storage, show placeholder
                                 img.setAttribute('src', 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#eee"/><text x="50" y="50" font-family="Arial" font-size="10" text-anchor="middle" fill="#aaa">Image not found</text></svg>');
                             }
                         }
                     });
-
-                    // Add the restored messages to the chat
                     chatMessages.innerHTML = tempDiv.innerHTML;
                     scrollToBottom();
                 }
@@ -826,7 +905,7 @@
             }
         }
 
-        // Clean up localStorage when clearing history
+        // Clear message history
         function clearMessageHistory() {
             localStorage.removeItem('chatHistory');
             localStorage.removeItem('chatImages');
@@ -835,12 +914,11 @@
             location.reload();
         }
 
-        // Helper functions
+        // Typewriter effect
         function typewriterEffect(element, text) {
             element.innerHTML = '';
             let i = 0;
-            const speed = 20; // typing speed in ms
-
+            const speed = 20;
             function type() {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
@@ -849,14 +927,15 @@
                     scrollToBottom();
                 }
             }
-
             type();
         }
 
+        // Scroll to bottom of chat
         function scrollToBottom() {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
+        // Copy message to clipboard
         function copyMessage(button) {
             const messageText = button.closest('.message-content').querySelector('.message-text').textContent;
             navigator.clipboard.writeText(messageText).then(() => {
@@ -865,6 +944,20 @@
                 showToast('Failed to copy', 'error');
             });
         }
+
+        // Auto-resize main textarea
+        questionInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Allow Shift+Enter for new line, Enter to submit in main textarea
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
 
         function clearImagePreview() {
             imagePreview.innerHTML = '';

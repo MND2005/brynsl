@@ -350,7 +350,7 @@ def ask_question():
             # Modified prompt with language selection
             fixed_prompt = f"""
             Analyze the question, solve it, and give the explanation and answer in {language} language.
-            Do not bold any text and only include texts.
+            Do not bold any text and only include texts and emojis.
             """
             question = f"{fixed_prompt}\n\nUser question: {question}"
         
