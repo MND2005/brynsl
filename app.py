@@ -361,7 +361,7 @@ def ask_question():
             # For text-only questions, still include language preference
             prompt = f"""
             Chat in {language} language.
-            Do not bold any text and only include texts.
+            Do not bold any text and only include texts and imojis.
             
            Answer to input: {question}
             """
@@ -975,6 +975,12 @@ def user_stats():
                          status_filter=status_filter,
                          users=users_data,
                          active_page='user_stats')
+
+
+
+
+
+
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
