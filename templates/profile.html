@@ -8,17 +8,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-dark: #0f172a;
-            --primary-blue: #1e40af;
-            --accent-blue: #3b82f6;
-            --light-blue: #93c5fd;
-            --text-light: #f8fafc;
-            --text-gray: #94a3b8;
-            --error-red: #ef4444;
-            --success-green: #10b981;
-            --gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            --glass-light: rgba(255, 255, 255, 0.1);
-            --glass-dark: rgba(15, 23, 42, 0.5);
+            --primary-dark: #000000;
+            --primary-gray: #1c1c1e;
+            --accent-blue: #0a84ff;
+            --text-light: #ffffff;
+            --text-gray: #8e8e93;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --glass-bg: rgba(28, 28, 30, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --status-active-bg: rgba(10, 132, 255, 0.3);
+            --status-inactive-bg: rgba(255, 69, 58, 0.3);
+            --age-badge-bg: rgba(10, 132, 255, 0.3);
         }
 
         * {
@@ -28,534 +28,214 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
             min-height: 100vh;
             background-color: var(--primary-dark);
             color: var(--text-light);
             padding: 0;
             line-height: 1.6;
-            background-image: 
-                radial-gradient(circle at 25% 25%, rgba(30, 64, 175, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
             overflow-x: hidden;
+            background-image: linear-gradient(
+                135deg,
+                rgba(10, 132, 255, 0.1) 0%,
+                transparent 50%
+            );
         }
 
         .profile-header {
             padding: 2rem 1.5rem;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .avatar-container {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1.5rem;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
             border-radius: 50%;
-            background: var(--gradient);
+            background-color: var(--accent-blue);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(59, 130, 246, 0.3);
-            position: relative;
-            animation: float 6s ease-in-out infinite;
-            backdrop-filter: blur(5px);
-            border: 1px solid var(--glass-light);
-        }
-
-        .avatar-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            padding: 2px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0));
-            -webkit-mask: 
-                linear-gradient(#fff 0 0) content-box, 
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
         }
 
         .avatar-container img {
-            width: 110px;
-            height: 110px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--primary-dark);
+            border: 2px solid var(--primary-gray);
         }
 
         .user-name {
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: 600;
             margin-bottom: 0.5rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            position: relative;
-            display: inline-block;
-        }
-
-        .user-name::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--gradient);
-            transform: scaleX(0);
-            transform-origin: right;
-            transition: transform 0.5s ease;
-        }
-
-        .user-name:hover::after {
-            transform: scaleX(1);
-            transform-origin: left;
         }
 
         .user-email {
             color: var(--text-gray);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .user-email:hover {
-            color: var(--light-blue);
-            transform: translateY(-2px);
         }
 
         .profile-card {
-            background: linear-gradient(
-                to right bottom,
-                rgba(15, 23, 42, 0.7),
-                rgba(15, 23, 42, 0.4)
-            );
+            background: var(--glass-bg);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px 24px 0 0;
-            padding: 2rem 1.5rem;
-            box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-            min-height: 60vh;
-            border-top: 1px solid var(--glass-light);
-            border-left: 1px solid var(--glass-light);
-        }
-
-        .profile-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 8px;
-            background: var(--gradient);
-        }
-
-        .profile-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(
-                circle at 70% 30%,
-                rgba(59, 130, 246, 0.1) 0%,
-                transparent 40%
-            );
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .profile-card:hover::after {
-            opacity: 1;
+            border-radius: 18px;
+            margin: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 5rem; /* Space for bottom nav */
         }
 
         .section-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            color: var(--light-blue);
-            position: relative;
-        }
-
-        .section-title::before {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 40px;
-            height: 2px;
-            background: var(--gradient);
-            border-radius: 2px;
-        }
-
-        .section-title i {
             font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-light);
         }
 
         .detail-card {
-            background: linear-gradient(
-                to right bottom,
-                rgba(30, 64, 175, 0.15),
-                rgba(30, 64, 175, 0.05)
-            );
-            border-radius: 16px;
-            padding: 1.2rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            transition: all 0.4s ease;
-            backdrop-filter: blur(5px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .detail-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            transition: 0.5s;
-        }
-
-        .detail-card:hover::before {
-            left: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .detail-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(10, 132, 255, 0.2);
         }
 
         .detail-header {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-bottom: 0.3rem;
             display: flex;
             align-items: center;
-            margin-bottom: 0.5rem;
-            color: var(--light-blue);
-            font-size: 0.9rem;
-            gap: 0.6rem;
+            gap: 0.5rem;
         }
 
         .detail-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
-            padding-left: 1.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .detail-card:hover .detail-value {
-            transform: translateX(5px);
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
             padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-top: 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
             backdrop-filter: blur(5px);
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
+            border: 1px solid var(--glass-border);
         }
 
         .status-active {
-            background: linear-gradient(
-                to right,
-                rgba(16, 185, 129, 0.15),
-                rgba(16, 185, 129, 0.05)
-            );
-            color: var(--success-green);
-            border-color: rgba(16, 185, 129, 0.2);
+            background: var(--status-active-bg);
+            color: var(--accent-blue);
         }
 
         .status-inactive {
-            background: linear-gradient(
-                to right,
-                rgba(239, 68, 68, 0.15),
-                rgba(239, 68, 68, 0.05)
-            );
-            color: var(--error-red);
-            border-color: rgba(239, 68, 68, 0.2);
+            background: var(--status-inactive-bg);
+            color: #ff453a;
         }
 
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 2.5rem;
-        }
-
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            padding: 1rem;
-            border-radius: 12px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 0.95rem;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-            backdrop-filter: blur(5px);
-            border: 1px solid transparent;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                45deg,
-                transparent,
-                rgba(255, 255, 255, 0.1),
-                transparent
-            );
-            transform: translateX(-100%);
-            transition: 0.6s;
-            z-index: -1;
-        }
-
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-
-        .btn-primary {
-            background: linear-gradient(
-                to right,
-                var(--primary-blue),
-                var(--accent-blue)
-            );
-            color: white;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-outline {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-blue);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-danger {
-            background: linear-gradient(
-                to right,
-                rgba(239, 68, 68, 0.1),
-                rgba(239, 68, 68, 0.05)
-            );
-            color: var(--error-red);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            grid-column: span 2;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(1px) scale(0.98);
-        }
-
-        /* Age calculation styling */
         .age-badge {
             display: inline-block;
-            background: rgba(147, 197, 253, 0.15);
-            color: var(--light-blue);
+            background: var(--age-badge-bg);
+            color: var(--accent-blue);
             padding: 0.2rem 0.6rem;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin-left: 0.5rem;
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(147, 197, 253, 0.2);
+            border: 1px solid var(--glass-border);
         }
 
-        /* Floating background elements */
-        .floating-circle {
+        .bottom-nav {
             position: fixed;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
-            z-index: -1;
-            animation: float 15s ease-in-out infinite;
-            filter: blur(20px);
-            opacity: 0.7;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .circle-1 {
-            top: -100px;
-            right: -100px;
-            width: 400px;
-            height: 400px;
-            animation-delay: 0s;
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
 
-        .circle-2 {
-            bottom: -150px;
-            left: -150px;
-            width: 500px;
-            height: 500px;
-            animation-delay: 2s;
+        .nav-btn.active,
+        .nav-btn:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
         }
 
-        .circle-3 {
-            top: 50%;
-            right: 50%;
-            width: 600px;
-            height: 600px;
-            animation-delay: 4s;
-        }
-
-        /* Liquid glass bubbles */
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(2px);
-            z-index: -1;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        /* Animations */
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-20px) rotate(5deg);
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-            50% {
-                transform: scale(1.05);
-                opacity: 0.9;
-            }
-        }
-
-        /* Responsive adjustments */
         @media (max-width: 480px) {
             .profile-header {
                 padding: 1.5rem 1rem;
             }
-            
+
             .avatar-container {
-                width: 100px;
-                height: 100px;
+                width: 80px;
+                height: 80px;
             }
-            
+
             .avatar-container img {
-                width: 90px;
-                height: 90px;
+                width: 70px;
+                height: 70px;
             }
-            
+
             .user-name {
                 font-size: 1.3rem;
             }
-            
+
             .profile-card {
-                padding: 1.5rem 1rem;
-                border-radius: 20px 20px 0 0;
-                backdrop-filter: blur(8px);
+                margin: 0.5rem;
+                padding: 1rem;
             }
-            
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-            
-            .btn-danger {
-                grid-column: span 1;
-            }
-        }
 
-        /* Add some random bubbles for liquid effect */
-        .liquid-bubbles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(1px);
-            animation: floatBubble 15s infinite linear;
-        }
-
-        @keyframes floatBubble {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.1;
-            }
-            100% {
-                transform: translateY(-100vh) rotate(360deg);
-                opacity: 0;
+            .bottom-nav {
+                left: 0.5rem;
+                right: 0.5rem;
+                padding: 0.5rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="floating-circle circle-1"></div>
-    <div class="floating-circle circle-2"></div>
-    <div class="floating-circle circle-3"></div>
-
-    <div class="liquid-bubbles" id="bubbles"></div>
-
     <div class="profile-header">
         <div class="avatar-container">
-             <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
         </div>
         <h1 class="user-name">{{ name }}</h1>
         <p class="user-email">
@@ -564,9 +244,7 @@
     </div>
 
     <div class="profile-card">
-        <div class="section-title">
-            <i class="fas fa-id-card"></i> Personal Information
-        </div>
+        <div class="section-title">Personal Information</div>
         
         <div class="detail-card">
             <div class="detail-header">
@@ -600,9 +278,7 @@
             </div>
         </div>
 
-        <div class="section-title" style="margin-top: 2rem;">
-            <i class="fas fa-user-shield"></i> Account Details
-        </div>
+        <div class="section-title" style="margin-top: 1.5rem;">Account Details</div>
         
         <div class="detail-card">
             <div class="detail-header">
@@ -623,75 +299,38 @@
                 </span>
             </div>
         </div>
+    </div>
 
-        <div class="action-buttons">
-            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                <i class="fas fa-arrow-left"></i> Dashboard
-            </a>
-            <a href="{{ url_for('user_notifications') }}" class="btn btn-primary">
-                <i class="fas fa-bell"></i> Notifications
-            </a>
-            <a href="{{ url_for('ideas') }}" class="btn btn-primary">
-                <i class="fa fa-paper-plane"></i>Send Feedbacks / <i class="fa fa-exclamation-triangle"></i>Report Errors
-            </a>
-            
-            <a href="{{ url_for('logout') }}" class="btn btn-danger">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </a>
-        </div>
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('dashboard') }}'">
+            <i class="fas fa-comments"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('user_notifications') }}'">
+            <i class="fas fa-bell"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('ideas') }}'">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('logout') }}'">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Create floating bubbles for liquid effect
-            const bubblesContainer = document.getElementById('bubbles');
-            for (let i = 0; i < 15; i++) {
-                const bubble = document.createElement('div');
-                bubble.classList.add('bubble');
-                
-                // Random size between 20px and 100px
-                const size = Math.random() * 80 + 20;
-                bubble.style.width = `${size}px`;
-                bubble.style.height = `${size}px`;
-                
-                // Random position
-                bubble.style.left = `${Math.random() * 100}%`;
-                bubble.style.bottom = `-${size}px`;
-                
-                // Random animation duration and delay
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 10;
-                bubble.style.animationDuration = `${duration}s`;
-                bubble.style.animationDelay = `${delay}s`;
-                
-                bubblesContainer.appendChild(bubble);
-            }
-
-            // Animation for elements
-            const cards = document.querySelectorAll('.detail-card');
-            cards.forEach((card, index) => {
-                card.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
-                card.style.opacity = '0';
-            });
-
-            // Add ripple effect to buttons
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const x = e.clientX - e.target.getBoundingClientRect().left;
-                    const y = e.clientY - e.target.getBoundingClientRect().top;
-                    
-                    const ripple = document.createElement('span');
-                    ripple.classList.add('ripple');
-                    ripple.style.left = `${x}px`;
-                    ripple.style.top = `${y}px`;
-                    
-                    this.appendChild(ripple);
-                    
-                    setTimeout(() => {
-                        ripple.remove();
-                    }, 1000);
-                });
+            // Set active state for current page (simplified example)
+            const currentPath = window.location.pathname;
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                const icon = btn.querySelector('i').className;
+                if (
+                    (currentPath.includes('dashboard') && icon.includes('fa-home')) ||
+                    (currentPath.includes('notifications') && icon.includes('fa-bell')) ||
+                    (currentPath.includes('ideas') && icon.includes('fa-paper-plane')) ||
+                    (currentPath.includes('logout') && icon.includes('fa-sign-out-alt'))
+                ) {
+                    btn.classList.add('active');
+                }
             });
         });
     </script>

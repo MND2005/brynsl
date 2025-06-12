@@ -1,402 +1,379 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="notification-container">
-    <!-- Navigation Buttons -->
-    <div class="nav-buttons">
-        <a href="/dashboard" class="nav-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            Dashboard
-        </a>
-        <a href="/profile" class="nav-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            Profile
-        </a>
-        <a href="/logout" class="nav-button logout">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Log Out
-        </a>
-    </div>
-
-    <div class="notification-header">
-        <h2>Your Notifications</h2>
-        <div class="notification-count">{{ notifications|length }} unread</div>
-    </div>
-    
-    {% if notifications %}
-        <div class="notification-list">
-            {% for note in notifications %}
-                <div class="notification-card {% if not note.read %}unread{% endif %}" 
-                     onclick="markAsRead('{{ note.id }}')"
-                     data-id="{{ note.id }}">
-                    <div class="notification-badge"></div>
-                    <div class="notification-content">
-                        <div class="notification-title">
-                            <h3>{{ note.title }}</h3>
-                            <span class="notification-time">{{ note.created_at }}</span>
-                        </div>
-                        <p class="notification-message">{{ note.message }}</p>
-                    </div>
-                    <div class="notification-status">
-                        {% if not note.read %}
-                        <span class="unread-dot"></span>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="notification-empty">
-            <div class="empty-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-            </div>
-            <h3>No notifications yet</h3>
-            <p>We'll let you know when something new arrives</p>
-        </div>
-    {% endif %}
-</div>
-
-<style>
-:root {
-    --bg-primary: #0f0f15;
-    --bg-secondary: #1a1a24;
-    --accent-color: #6c5ce7;
-    --danger-color: #ff4757;
-    --text-primary: #ffffff;
-    --text-secondary: #b8b8c5;
-    --glass-blur: 12px;
-    --glass-opacity: 0.2;
-    --transition-speed: 0.3s;
-}
-
-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-
-.notification-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
-}
-
-/* Navigation Buttons */
-.nav-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-}
-
-.nav-button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.8rem 1.2rem;
-    background: rgba(26, 26, 36, 0.6);
-    backdrop-filter: blur(var(--glass-blur));
-    border-radius: 8px;
-    text-decoration: none;
-    color: var(--text-primary);
-    font-weight: 500;
-    transition: all var(--transition-speed) ease;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.nav-button:hover {
-    background: rgba(108, 92, 231, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.nav-button svg {
-    stroke: var(--accent-color);
-}
-
-.nav-button.logout {
-    margin-left: auto;
-}
-
-.nav-button.logout svg {
-    stroke: var(--danger-color);
-}
-
-.nav-button.logout:hover {
-    background: rgba(255, 71, 87, 0.2);
-}
-
-.notification-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    position: relative;
-}
-
-.notification-header h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 0;
-    background: linear-gradient(90deg, #6c5ce7, #a29bfe);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-.notification-count {
-    background: rgba(108, 92, 231, 0.2);
-    backdrop-filter: blur(10px);
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--accent-color);
-    border: 1px solid rgba(108, 92, 231, 0.3);
-}
-
-.notification-list {
-    display: grid;
-    gap: 1rem;
-}
-
-.notification-card {
-    background: rgba(26, 26, 36, 0.6);
-    backdrop-filter: blur(var(--glass-blur));
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: flex-start;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all var(--transition-speed) ease;
-    cursor: pointer;
-}
-
-.notification-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(26, 26, 36, 0));
-    opacity: 0;
-    transition: opacity var(--transition-speed) ease;
-}
-
-.notification-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    border-color: rgba(108, 92, 231, 0.3);
-}
-
-.notification-card:hover::before {
-    opacity: 1;
-}
-
-.notification-card.unread {
-    background: rgba(33, 33, 49, 0.6);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.1); }
-    70% { box-shadow: 0 0 0 8px rgba(108, 92, 231, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
-}
-
-.notification-badge {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--accent-color), #a29bfe);
-    border-radius: 4px 0 0 4px;
-}
-
-.notification-content {
-    flex: 1;
-    margin-left: 1rem;
-}
-
-.notification-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.notification-title h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 500;
-}
-
-.notification-time {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.notification-message {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-.notification-status {
-    margin-left: 1rem;
-}
-
-.unread-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background: var(--accent-color);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-color);
-    animation: blink 1.5s infinite;
-}
-
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.3; }
-    100% { opacity: 1; }
-}
-
-.notification-empty {
-    text-align: center;
-    padding: 3rem 0;
-    background: rgba(26, 26, 36, 0.4);
-    backdrop-filter: blur(var(--glass-blur));
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.empty-icon {
-    margin-bottom: 1.5rem;
-}
-
-.empty-icon svg {
-    stroke: var(--accent-color);
-}
-
-.notification-empty h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-}
-
-.notification-empty p {
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .notification-container {
-        padding: 0 1rem;
-    }
-    
-    .notification-card {
-        padding: 1.2rem;
-    }
-    
-    .nav-buttons {
-        flex-direction: column;
-        gap: 0.8rem;
-    }
-    
-    .nav-button.logout {
-        margin-left: 0;
-    }
-}
-
-/* Animation for new notifications */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.notification-card {
-    animation: slideIn 0.5s ease forwards;
-}
-
-.notification-card:nth-child(1) { animation-delay: 0.1s; }
-.notification-card:nth-child(2) { animation-delay: 0.2s; }
-.notification-card:nth-child(3) { animation-delay: 0.3s; }
-.notification-card:nth-child(4) { animation-delay: 0.4s; }
-.notification-card:nth-child(5) { animation-delay: 0.5s; }
-</style>
-
-<script>
-function markAsRead(notificationId) {
-    const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
-    
-    // Add visual feedback immediately
-    card.classList.remove('unread');
-    card.style.transform = 'scale(0.98)';
-    
-    setTimeout(() => {
-        card.style.transform = '';
-    }, 200);
-    
-    // Send the request
-    fetch('/notifications/mark_as_read/' + notificationId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #000000;
+            --primary-gray: #1c1c1e;
+            --accent-blue: #0a84ff;
+            --text-light: #ffffff;
+            --text-gray: #8e8e93;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --glass-bg: rgba(28, 28, 30, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --status-active-bg: rgba(10, 132, 255, 0.3);
+            --status-inactive-bg: rgba(255, 69, 58, 0.3);
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update the unread count
-            const unreadCount = document.querySelectorAll('.unread').length;
-            document.querySelector('.notification-count').textContent = `${unreadCount} unread`;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        card.classList.add('unread');
-    });
-}
 
-// Add hover effect with JavaScript for better performance
-document.querySelectorAll('.notification-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            min-height: 100vh;
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: linear-gradient(
+                135deg,
+                rgba(10, 132, 255, 0.1) 0%,
+                transparent 50%
+            );
+        }
+
+        .notification-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            margin-bottom: 5rem; /* Space for bottom nav */
+        }
+
+        .notification-header {
+            padding: 1.5rem;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .notification-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-count {
+            background: var(--status-active-bg);
+            color: var(--accent-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(5px);
+        }
+
+        .notification-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .notification-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(10, 132, 255, 0.2);
+        }
+
+        .notification-card.unread {
+            background: rgba(33, 33, 49, 0.6);
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-title h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .notification-time {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .notification-message {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        .notification-status {
+            margin-left: 1rem;
+        }
+
+        .unread-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-blue);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .notification-empty {
+            text-align: center;
+            padding: 3rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        .empty-icon {
+            margin-bottom: 1rem;
+        }
+
+        .empty-icon svg {
+            stroke: var(--accent-blue);
+        }
+
+        .notification-empty h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-empty p {
+            color: var(--text-gray);
+            margin: 0;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-btn.active,
+        .nav-btn:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 480px) {
+            .notification-container {
+                padding: 0 1rem;
+            }
+
+            .notification-header {
+                padding: 1rem;
+            }
+
+            .notification-card {
+                padding: 1.2rem;
+            }
+
+            .bottom-nav {
+                left: 0.5rem;
+                right: 0.5rem;
+                padding: 0.5rem;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification-card {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .notification-card:nth-child(1) { animation-delay: 0.1s; }
+        .notification-card:nth-child(2) { animation-delay: 0.2s; }
+        .notification-card:nth-child(3) { animation-delay: 0.3s; }
+        .notification-card:nth-child(4) { animation-delay: 0.4s; }
+        .notification-card:nth-child(5) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="notification-container">
+        <div class="notification-header">
+            <h2>Your Notifications</h2>
+            <div class="notification-count">{{ notifications|length }} unread</div>
+        </div>
         
-        card.style.setProperty('--mouse-x', `${x}px`);
-        card.style.setProperty('--mouse-y', `${y}px`);
-    });
-});
-</script>
-{% endblock %}
+        {% if notifications %}
+            <div class="notification-list">
+                {% for note in notifications %}
+                    <div class="notification-card {% if not note.read %}unread{% endif %}" 
+                         onclick="markAsRead('{{ note.id }}')"
+                         data-id="{{ note.id }}">
+                        <div class="notification-content">
+                            <div class="notification-title">
+                                <h3>{{ note.title }}</h3>
+                                <span class="notification-time">{{ note.created_at }}</span>
+                            </div>
+                            <p class="notification-message">{{ note.message }}</p>
+                        </div>
+                        <div class="notification-status">
+                            {% if not note.read %}
+                            <span class="unread-dot"></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="notification-empty">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+                <h3>No notifications yet</h3>
+                <p>We'll let you know when something new arrives</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('dashboard') }}'">
+            <i class="fas fa-comments"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('profile') }}'">
+            <i class="fas fa-user"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('ideas') }}'">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('logout') }}'">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+
+    <script>
+        function markAsRead(notificationId) {
+            const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
+            
+            // Add visual feedback immediately
+            card.classList.remove('unread');
+            card.style.transform = 'scale(0.98)';
+            
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 200);
+            
+            // Send the request
+            fetch('/notifications/mark_as_read/' + notificationId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the unread count
+                    const unreadCount = document.querySelectorAll('.unread').length;
+                    document.querySelector('.notification-count').textContent = `${unreadCount} unread`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                card.classList.add('unread');
+            });
+        }
+
+        // Add hover effect with JavaScript for better performance
+        document.querySelectorAll('.notification-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.setProperty('--mouse-x', `${x'}`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Set active state for current page
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                const icon = btn.querySelector('i').className;
+                if (
+                    (currentPath.includes('dashboard') && icon.includes('fa-home')) ||
+                    (currentPath.includes('notifications') && icon.includes('fa-bell')) ||
+                    (currentPath.includes('ideas') && icon.includes('fa-paper-plane')) ||
+                    (currentPath.includes('logout') && icon.includes('fa-sign-out-alt'))
+                ) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
