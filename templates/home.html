@@ -1114,14 +1114,17 @@
         <div class="screenshot-carousel">
             <div class="carousel-track">
                 <div class="screenshot-slide">
-                    <img src="{{ url_for('static', filename='Media/login.jpg') }}" alt="App Home Screen">
+                    <img src="{{ url_for('static', filename='Media/log_in.jpg') }}" alt="App Home Screen">
                 </div>
                 <div class="screenshot-slide">
-                    <img src="{{ url_for('static', filename='Media/signin.jpg') }}" alt="App Dashboard">
+                    <img src="{{ url_for('static', filename='Media/sign_up.jpg') }}" alt="App Dashboard">
                 </div>
                 <div class="screenshot-slide">
-                    <img src="{{ url_for('static', filename='Media/dash.jpg') }}" alt="App Settings">
+                    <img src="{{ url_for('static', filename='Media/dashboard.jpg') }}" alt="App Settings">
                 </div>
+                <div class="screenshot-slide">
+                    <img src="{{ url_for('static', filename='Media/ideas.jpg') }}" alt="App Settings">
+                </div>s
             </div>
             <button class="carousel-button prev"><i class="fas fa-chevron-left"></i></button>
             <button class="carousel-button next"><i class="fas fa-chevron-right"></i></button>
@@ -1156,23 +1159,23 @@
         <div class="team-cards">
             <div class="team-card">
                 <div class="team-member-info">
-                    <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Team Member 1" class="team-member-avatar">
+                    <img src="{{ url_for('static', filename='Media/manuja.jpg') }}" alt="Team Member 1" class="team-member-avatar">
                     <div class="team-member-details">
-                        <h4>Sarah Johnson</h4>
-                        <p>Lead Developer</p>
+                        <h4>Manuja Niroshan</h4>
+                        <p>Software Developer</p>
                     </div>
                 </div>
-                <p class="team-member-text">Sarah is a passionate software engineer with over 8 years of experience in mobile app development, specializing in creating intuitive and high-performance applications.</p>
+                <p class="team-member-text">App Developer & UI/UX Designer: Crafts innovative, user-centric mobile and web applications with seamless functionality and visually appealing, intuitive interfaces.</p>
             </div>
             <div class="team-card">
                 <div class="team-member-info">
-                    <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Team Member 2" class="team-member-avatar">
+                    <img src="{{ url_for('static', filename='Media/dinusha.jpg') }}" alt="Team Member 2" class="team-member-avatar">
                     <div class="team-member-details">
-                        <h4>Michael Chen</h4>
-                        <p>UI/UX Designer</p>
+                        <h4>Dinusha Madushanka</h4>
+                        <p>Software Developer</p>
                     </div>
                 </div>
-                <p class="team-member-text">Michael brings creativity and user-centric design to BRYN, ensuring a seamless and visually stunning experience for all users.</p>
+                <p class="team-member-text">Streamlines app development by simplifying and accelerating the upload process with intuitive tools and seamless integration.</p>
             </div>
         </div>
     </section>

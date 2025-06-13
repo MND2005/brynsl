@@ -116,6 +116,9 @@ def home():
 def launch():
     return render_template('launch.html')
 
+@app.route('/userguide')
+def userguide():
+    return render_template('user_guide.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -303,6 +306,147 @@ def login():
         return redirect(url_for('dashboard'))
 
     return render_template('login.html')
+
+# Add these new routes after the resend_otp route
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        
+        # Check if user exists
+        user_ref = db.reference('users')
+        users = user_ref.get()
+        user_id = None
+        for uid, user in users.items():
+            if user.get('email') == email:
+                user_id = uid
+                break
+        
+        if not user_id:
+            return render_template('forgot_password.html', error="No account found with this email.")
+        
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+        otp_expiry = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Store in session
+        session['reset_password'] = {
+            "email": email,
+            "uid": user_id,
+            "otp": otp,
+            "otp_expiry": otp_expiry
+        }
+        
+        # Send OTP via Mailtrap API
+        try:
+            headers = {
+                "Authorization": f"Bearer {MAILTRAP_API_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "from": {"email": "hello@brynsl.com", "name": "BrynSL"},
+                "to": [{"email": email}],
+                "subject": "Password Reset OTP",
+                "text": f"Your OTP for password reset is: {otp}\n\nExpires in 15 minutes.",
+                "category": "Password Reset"
+            }
+            
+            response = requests.post(MAILTRAP_API_URL, headers=headers, json=payload)
+            
+            if response.status_code != 200:
+                session.pop('reset_password', None)
+                return render_template('forgot_password.html', error="Failed to send OTP. Please try again.")
+            
+            return redirect(url_for('verify_reset_otp'))
+        
+        except Exception as e:
+            session.pop('reset_password', None)
+            return render_template('forgot_password.html', error=f"Email service error: {str(e)}")
+    
+    return render_template('forgot_password.html')
+
+# Replace the existing verify_reset_otp route with this corrected version
+# Ensure this import is at the top of app.py
+from firebase_admin import auth
+
+# Replace the verify_reset_otp route with this version
+@app.route('/verify_reset_otp', methods=['GET', 'POST'])
+def verify_reset_otp():
+    reset_data = session.get('reset_password')
+    if not reset_data:
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        # Check if this is a resend OTP request
+        if 'resend' in request.form:
+            new_otp = str(random.randint(100000, 999999))
+            reset_data['otp'] = new_otp
+            reset_data['otp_expiry'] = (datetime.datetime.now() + datetime.timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+            session['reset_password'] = reset_data
+            
+            try:
+                headers = {
+                    "Authorization": f"Bearer {MAILTRAP_API_TOKEN}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "from": {"email": "hello@brynsl.com", "name": "BrynSL"},
+                    "to": [{"email": reset_data['email']}],
+                    "subject": "New Password Reset OTP",
+                    "text": f"Your new OTP for password reset is: {new_otp}\n\nExpires in 15 minutes.",
+                    "category": "Password Reset"
+                }
+                
+                response = requests.post(MAILTRAP_API_URL, headers=headers, json=payload)
+                
+                if response.status_code != 200:
+                    return render_template('verify_reset_otp.html', error="Failed to resend OTP. Try again.")
+                
+                return render_template('verify_reset_otp.html', message="New OTP sent successfully!")
+            
+            except Exception as e:
+                return render_template('verify_reset_otp.html', error=f"Error resending OTP: {str(e)}")
+        
+        # Verify OTP and handle new password
+        otp = request.form.get('otp')
+        new_password = request.form.get('new_password')
+        
+        # Check OTP expiry
+        otp_expiry = datetime.datetime.strptime(reset_data['otp_expiry'], "%Y-%m-%d %H:%M:%S")
+        if datetime.datetime.now() > otp_expiry:
+            session.pop('reset_password', None)
+            return render_template('verify_reset_otp.html', error="OTP has expired. Please request a new one.")
+        
+        if otp != reset_data['otp']:
+            return render_template('verify_reset_otp.html', error="Invalid OTP. Try again.")
+        
+        # Validate new password
+        if len(new_password) < 6:
+            return render_template('verify_reset_otp.html', error="Password must be at least 6 characters long.")
+        
+        # Update password using Firebase Admin SDK
+        try:
+            user = firebase_admin.auth.update_user(
+                reset_data['uid'],
+                password=new_password
+            )
+            
+            # Clear session and redirect to login
+            session.pop('reset_password', None)
+            return redirect(url_for('login'))
+        
+        except firebase_admin.auth.AuthError as e:
+            session.pop('reset_password', None)
+            return render_template('verify_reset_otp.html', error=f"Password reset failed: {str(e)}")
+        except Exception as e:
+            session.pop('reset_password', None)
+            return render_template('verify_reset_otp.html', error=f"Password reset failed: {str(e)}")
+    
+    return render_template('login.html')
+
 
 @app.route('/dashboard')
 def dashboard():

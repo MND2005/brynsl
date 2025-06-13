@@ -254,7 +254,34 @@
     .toggle-password:hover {
         color: var(--glow-blue);
     }
+    .forgot-password-link {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
 
+.forgot-password-link a {
+    color: var(--glow-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.forgot-password-link a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--glow-blue);
+    transition: width 0.3s ease;
+}
+
+.forgot-password-link a:hover::after {
+    width: 100%;
+}
     /* Mobile-specific adjustments */
     @media (max-width: 480px) {
          body {
@@ -352,6 +379,9 @@
             
             <div class="signup-link">
                 Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+            </div>
+            <div class="forgot-password-link">
+                <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
             </div>
         </div>
     </div>

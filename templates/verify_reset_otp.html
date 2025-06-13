@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify OTP</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --glow-blue: #4dabff;
+            --dark-bg: #0f0f13;
+            --darker-bg: #0a0a0c;
+            --card-bg: #1a1a24;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0c0;
+            --border-color: #2a2a3a;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 5px rgba(77, 171, 255, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(77, 171, 255, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(77, 171, 255, 0.5); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(26, 115, 232, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(26, 115, 232, 0.1) 0%, transparent 50%);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 5px;
+            animation: fadeIn 0.6s ease-out;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .company-logo {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(77, 171, 255, 0.5));
+        }
+
+        .otp-container {
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .otp-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+
+        .otp-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse, rgba(77, 171, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        h2 {
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
+            position: relative;
+        }
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--glow-blue));
+            margin: 10px auto 0;
+            border-radius: 3px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--darker-bg);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+        }
+
+        input::placeholder {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3);
+            animation: pulseGlow 2s infinite;
+        }
+
+        .error-message, .success-message {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+        }
+
+        .success-message {
+            color: #4dabff;
+        }
+
+        .resend-link, .back-to-login {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .resend-link a, .back-to-login a {
+            color: var(--glow-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .resend-link a::after, .back-to-login a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--glow-blue);
+            transition: width 0.3s ease;
+        }
+
+        .resend-link a:hover::after, .back-to-login a:hover::after {
+            width: 100%;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-password:hover {
+            color: var(--glow-blue);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px;
+            }
+
+            .logo-container {
+                margin-bottom: 5px;
+            }
+
+            .company-logo {
+                max-width: 250px;
+            }
+
+            .otp-card {
+                padding: 25px 20px;
+                border-radius: 12px;
+            }
+
+            h2 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            input {
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 13px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Company Logo" class="company-logo">
+    </div>
+
+    <div class="otp-container">
+        <div class="otp-card">
+            <h2>Verify OTP</h2>
+            {% if error %}
+                <div class="error-message">{{ error }}</div>
+            {% endif %}
+            {% if message %}
+                <div class="success-message">{{ message }}</div>
+            {% endif %}
+            <form method="POST">
+                <div class="form-group">
+                    <input type="text" name="otp" required placeholder="Check Your Email and Enter OTP">
+                </div>
+                <div class="form-group password-group">
+                    <input type="password" name="new_password" id="new_password" required placeholder="Enter new password">
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword()"></i>
+                </div>
+                <button type="submit">Reset Password</button>
+                <button type="submit" name="resend" value="resend">Resend OTP</button>
+            </form>
+            <div class="back-to-login">
+                <a href="{{ url_for('login') }}">Back to Login</a>
+            </div>
+        </div>
+    </div>
+    <script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('new_password');
+        const toggleIcon = document.querySelector('.toggle-password');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+    </script>
+</body>
+</html>
