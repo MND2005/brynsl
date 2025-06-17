@@ -562,14 +562,13 @@
             right: 20px;
         }
 
-        /* CEO Message Section - Spotlight Design */
-    .ceo-message {
-        background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1a 100%);
-        padding: 100px 5%;
+      .ceo-message {
+        background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+        padding: 120px 5% 150px;
         position: relative;
         overflow: hidden;
     }
-
+    
     .ceo-message::before {
         content: '';
         position: absolute;
@@ -577,113 +576,414 @@
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
-        animation: rotate 20s linear infinite;
+        background: radial-gradient(circle, rgba(108, 92, 231, 0.05) 0%, transparent 70%);
+        animation: rotate 30s linear infinite;
         z-index: 0;
     }
-
-    .ceo-card {
-        max-width: 900px;
+    
+    .ceo-container {
+        max-width: 1200px;
         margin: 0 auto;
-        background: rgba(26, 26, 46, 0.8);
-        backdrop-filter: blur(12px);
-        border-radius: 20px;
-        padding: 50px;
-        border: 1px solid rgba(108, 92, 231, 0.3);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        position: relative;
-        z-index: 2;
-        transition: all 0.4s ease;
-    }
-
-    .ceo-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 25px 60px rgba(108, 92, 231, 0.25);
-        border-color: rgba(108, 92, 231, 0.5);
-    }
-
-    .ceo-header {
         display: flex;
         align-items: center;
-        margin-bottom: 30px;
+        gap: 60px;
+        position: relative;
+        z-index: 2;
     }
-
-    .ceo-avatar {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
+    
+    .ceo-portrait {
+        flex: 1;
+        position: relative;
+        min-width: 400px;
+    }
+    
+    .portrait-frame {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        transform: perspective(1000px) rotateY(-10deg);
+        transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 5px solid rgba(108, 92, 231, 0.3);
+    }
+    
+    .ceo-portrait:hover .portrait-frame {
+        transform: perspective(1000px) rotateY(0deg);
+        box-shadow: 0 40px 80px rgba(108, 92, 231, 0.3);
+        border-color: rgba(108, 92, 231, 0.6);
+    }
+    
+    .ceo-image {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        border: 4px solid var(--primary-color);
-        margin-right: 30px;
-        box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+        object-position: top center;
+        transition: transform 0.6s ease;
     }
-
-    .ceo-title h3 {
-        font-size: 1.8rem;
+    
+    .ceo-portrait:hover .ceo-image {
+        transform: scale(1.05);
+    }
+    
+    .portrait-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(108, 92, 231, 0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.6s ease;
+    }
+    
+    .ceo-portrait:hover .portrait-glow {
+        opacity: 1;
+    }
+    
+    .portrait-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: float-particle 8s infinite ease-in-out;
+    }
+    
+    .particle:nth-child(1) {
+        width: 6px;
+        height: 6px;
+        top: 20%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+    
+    .particle:nth-child(2) {
+        width: 4px;
+        height: 4px;
+        top: 60%;
+        left: 25%;
+        animation-delay: 1s;
+    }
+    
+    .particle:nth-child(3) {
+        width: 5px;
+        height: 5px;
+        top: 40%;
+        left: 75%;
+        animation-delay: 2s;
+    }
+    
+    .particle:nth-child(4) {
+        width: 3px;
+        height: 3px;
+        top: 80%;
+        left: 60%;
+        animation-delay: 3s;
+    }
+    
+    .particle:nth-child(5) {
+        width: 4px;
+        height: 4px;
+        top: 30%;
+        left: 50%;
+        animation-delay: 4s;
+    }
+    
+    .ceo-badge {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);
+        z-index: 3;
+        transition: all 0.4s ease;
+    }
+    
+    .ceo-portrait:hover .ceo-badge {
+        transform: translateX(-50%) translateY(-10px);
+        box-shadow: 0 15px 40px rgba(108, 92, 231, 0.6);
+    }
+    
+    .ceo-content {
+        flex: 1;
+        position: relative;
+    }
+    
+    .ceo-quote-card {
+        background: rgba(26, 26, 46, 0.8);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 50px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.6s ease;
+    }
+    
+    .ceo-quote-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.05) 0%, transparent 100%);
+        z-index: -1;
+    }
+    
+    .ceo-quote-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 80px rgba(108, 92, 231, 0.3);
+        border-color: rgba(108, 92, 231, 0.6);
+    }
+    
+    .quote-mark {
+        position: absolute;
+        font-size: 120px;
+        color: rgba(108, 92, 231, 0.2);
+        font-family: serif;
+        line-height: 1;
+        transition: all 0.6s ease;
+    }
+    
+    .quote-mark.open {
+        top: 20px;
+        left: 30px;
+    }
+    
+    .quote-mark.close {
+        bottom: 20px;
+        right: 30px;
+    }
+    
+    .ceo-quote-card:hover .quote-mark {
+        color: rgba(108, 92, 231, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .ceo-quote {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .ceo-signature {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-top: 40px;
+    }
+    
+    .signature-image {
+        width: 120px;
+        filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+        transition: all 0.4s ease;
+    }
+    
+    .ceo-quote-card:hover .signature-image {
+        filter: drop-shadow(0 8px 25px rgba(108, 92, 231, 0.4));
+    }
+    
+    .signature-details h3 {
+        font-size: 1.5rem;
         margin-bottom: 5px;
         color: white;
     }
-
-    .ceo-title p {
+    
+    .signature-details p {
         color: var(--secondary-color);
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
-
-    .ceo-quote {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: rgba(255, 255, 255, 0.9);
-        position: relative;
-        padding-left: 30px;
-        border-left: 3px solid var(--secondary-color);
+    
+    @keyframes float-particle {
+        0%, 100% {
+            transform: translateY(0) translateX(0);
+        }
+        25% {
+            transform: translateY(-15px) translateX(5px);
+        }
+        50% {
+            transform: translateY(0) translateX(10px);
+        }
+        75% {
+            transform: translateY(15px) translateX(5px);
+        }
     }
-
-    .ceo-quote::before {
-        content: '"';
-        font-size: 5rem;
-        color: rgba(108, 92, 231, 0.2);
-        position: absolute;
-        left: -20px;
-        top: -30px;
-        font-family: serif;
-        line-height: 1;
-    }
-
-    .ceo-signature {
-        margin-top: 30px;
-        text-align: right;
-        font-style: italic;
-        color: var(--text-muted);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .ceo-header {
+    
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .ceo-container {
             flex-direction: column;
-            text-align: center;
+            gap: 40px;
         }
         
-        .ceo-avatar {
-            margin-right: 0;
-            margin-bottom: 20px;
-            width: 100px;
-            height: 100px;
+        .ceo-portrait {
+            min-width: 300px;
+            max-width: 400px;
         }
         
-        .ceo-card {
+        .portrait-frame {
+            height: 400px;
+            transform: perspective(1000px) rotateY(0deg);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .ceo-quote-card {
             padding: 30px;
         }
         
+        .quote-mark {
+            font-size: 80px;
+        }
+        
+        .quote-mark.open {
+            top: 10px;
+            left: 20px;
+        }
+        
+        .quote-mark.close {
+            bottom: 10px;
+            right: 20px;
+        }
+        
         .ceo-quote {
-            padding-left: 20px;
             font-size: 1rem;
+        }
+        
+        .signature-image {
+            width: 100px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .ceo-portrait {
+            min-width: 250px;
+        }
+        
+        .portrait-frame {
+            height: 350px;
+        }
+        
+        .ceo-quote-card {
+            padding: 25px;
+        }
+        
+        .ceo-signature {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
     }
 
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
+.signature-line {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-color));
+    margin: 0 0 15px auto;
+    animation: drawLine 1s forwards 1.8s;
+    transform: scaleX(0);
+    transform-origin: right;
+}
+
+.signature-text {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-style: italic;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.signature-decoration {
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.signature-decoration i {
+    color: var(--secondary-color);
+    font-size: 0.8rem;
+    animation: starTwinkle 2s infinite ease-in-out;
+}
+
+.signature-decoration i:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.signature-decoration i:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+/* Corner decorations */
+.corner-decoration {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--primary-color);
+    opacity: 0.6;
+}
+
+.corner-decoration.top-left {
+    top: 20px;
+    left: 20px;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 10px;
+    animation: cornerGlow 3s infinite ease-in-out;
+}
+
+.corner-decoration.top-right {
+    top: 20px;
+    right: 20px;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 10px;
+    animation: cornerGlow 3s infinite ease-in-out 0.5s;
+}
+
+.corner-decoration.bottom-left {
+    bottom: 20px;
+    left: 20px;
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 10px;
+    animation: cornerGlow 3s infinite ease-in-out 1s;
+}
+
+.corner-decoration.bottom-right {
+    bottom: 20px;
+    right: 20px;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 10px;
+    animation: cornerGlow 3s infinite ease-in-out 1.5s;
+}
+
+/* Enhanced Animations */
+@keyframes backgroundPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+
 
     /* Responsive Adjustments */
     @media (max-width: 768px) {
@@ -1146,7 +1446,7 @@
         <div class="nav-links">
             <a href="#features" class="nav-link">Features</a>
             <a href="#screenshots" class="nav-link">Screenshots</a>
-            <a href="#testimonials" class="nav-link">CEO Message</a>
+            <a href="#ceo-message" class="nav-link">CEO Message</a>
             <a href="#team" class="nav-link">Team</a>
             <a href="#download" class="nav-link cta-button">Download</a>
         </div>
@@ -1158,7 +1458,7 @@
     <div class="mobile-menu">
         <a href="#features" class="mobile-nav-link">Features</a>
         <a href="#screenshots" class="mobile-nav-link">Screenshots</a>
-        <a href="#testimonials" class="mobile-nav-link">CEO Message</a>
+        <a href="#ceo-message" class="mobile-nav-link">CEO Message</a>
         <a href="#team" class="mobile-nav-link">Team</a>
         <a href="#download" class="mobile-nav-link cta-button">Download</a>
     </div>
@@ -1262,28 +1562,44 @@
     <!-- CEO Message Section HTML -->
     <section id="ceo-message" class="ceo-message">
         <div class="section-header">
-            <h2 class="section-title">Message From <span class="highlight">Our CEO</span></h2>
-            <p class="section-subtitle">Leadership vision driving BRYN forward</p>
+            <h2 class="section-title">Leadership <span class="highlight">Vision</span></h2>
+            <p class="section-subtitle">The mind behind BRYN's educational revolution</p>
         </div>
         
-        <div class="ceo-card">
-            <div class="ceo-header">
-                <img src="{{ url_for('static', filename='Media/ceo.jpg') }}" alt="CEO" class="ceo-avatar">
-                <div class="ceo-title">
-                    <h3>Tharindu Chamara Herath</h3>
-                    <p>Founder & CEO of BRYN</p>
+        <div class="ceo-container">
+            <div class="ceo-portrait">
+                <div class="portrait-frame">
+                    <img src="{{ url_for('static', filename='Media/ceo.jpg') }}" alt="CEO" class="ceo-image">
+                    <div class="portrait-glow"></div>
+                    <div class="portrait-particles">
+                        
+                    </div>
+                </div>
+                <div class="ceo-badge">
+                    <span>CEO</span>
                 </div>
             </div>
             
-            <blockquote class="ceo-quote">
-                "At BRYN, we believe education should adapt to the learner—not the other way around. Our platform represents five years of research into cognitive science and AI, distilled into an experience that feels magical yet profoundly effective. What excites me most isn't just the technology, but seeing students who once struggled now thriving with confidence. This is just the beginning—we're building the future where anyone, anywhere can unlock their full potential through personalized learning."
-            </blockquote>
-            
-            <div class="ceo-signature">
-                — Tharindu C. Herath
+            <div class="ceo-content">
+                <div class="ceo-quote-card">
+                    <div class="quote-mark open">“</div>
+                    <blockquote class="ceo-quote">
+                        At Cosmosl, we believe software has the power to transform how businesses operate and how people connect with the world. As CEO, I’m proud to lead a team dedicated to creating innovative, user-focused solutions that drive progress and empower our clients to achieve their boldest ambitions.Since our founding, Cosmosl has been at the forefront of [specific focus, e.g., cloud-based AI solutions, enterprise software, or cybersecurity], delivering tools that are not only cutting-edge but also intuitive and reliable. Our commitment to excellence has fueled milestones like [general achievement, e.g., serving thousands of global customers or pioneering a breakthrough platform], and we’re just getting started.Our mission is simple: to build software that inspires, simplifies, and scales. With our talented team and trusted partners, we’re shaping a future where technology unlocks limitless possibilities for businesses of all sizes. Thank you for being part of our journey—I’m excited about what we’ll achieve together.
+                    </blockquote>
+                    <div class="quote-mark close">”</div>
+                    
+                    <div class="ceo-signature">
+                        <img src="{{ url_for('static', filename='Media/signature.png') }}" alt="Signature" class="signature-image">
+                        <div class="signature-details">
+                            <h3>Tharindu Chamara Herath</h3>
+                            <p>CEO - CosmoSL Pvt Ltd & CT Tech Eng.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
 
     <section id="team" class="team">
         <div class="section-header">
@@ -1297,7 +1613,7 @@
                 </div>
                 <div class="team-member-info">
                     <h3 class="team-member-name">Manuja Niroshan</h3>
-                    <p class="team-member-role">Lead Developer</p>
+                    <p class="team-member-role">Software Developer</p>
                     <p class="team-member-bio">App Developer & UI/UX Designer: Crafts innovative, user-centric mobile and web applications with seamless functionality and visually appealing, intuitive interfaces.</p>
                     <div class="team-social-links">
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
@@ -1347,7 +1663,7 @@
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
                 <a href="#">Contact Us</a>
-                <a href="#">Support</a>
+                <a href="https://www.brynsl.com/userguide">Support</a>
             </div>
             <div class="social-links">
                 <a href="#"><i class="fab fa-twitter"></i></a>
@@ -1357,7 +1673,7 @@
             </div>
         </div>
         <div class="copyright">
-            © 2025 BRYN App. All rights reserved.
+            © 2025 CosmoSL Pvt Ltd. All rights reserved.
         </div>
     </footer>
 
@@ -1539,5 +1855,40 @@
             });
         });
     </script>
+    <script>
+    // Add animation to CEO section when it comes into view
+    document.addEventListener('DOMContentLoaded', function() {
+        const ceoSection = document.querySelector('.ceo-message');
+        
+        const animateCeoSection = () => {
+            const ceoPosition = ceoSection.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.2;
+            
+            if (ceoPosition < screenPosition) {
+                ceoSection.classList.add('animated');
+                
+                // Remove the event listener after animation triggers
+                window.removeEventListener('scroll', animateCeoSection);
+            }
+        };
+        
+        // Initial check in case section is already visible
+        animateCeoSection();
+        
+        // Add scroll event listener
+        window.addEventListener('scroll', animateCeoSection);
+        
+        // Add particle animation
+        const particles = document.querySelectorAll('.particle');
+        particles.forEach(particle => {
+            // Randomize animation duration and delay
+            const duration = 8 + Math.random() * 4;
+            const delay = Math.random() * 5;
+            
+            particle.style.animationDuration = `${duration}s`;
+            particle.style.animationDelay = `${delay}s`;
+        });
+    });
+</script>
 </body>
 </html>
