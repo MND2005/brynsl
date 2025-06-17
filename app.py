@@ -445,7 +445,7 @@ def verify_reset_otp():
             session.pop('reset_password', None)
             return render_template('verify_reset_otp.html', error=f"Password reset failed: {str(e)}")
     
-    return render_template('login.html')
+    return render_template('verify_reset_otp.html')
 
 
 @app.route('/dashboard')
