@@ -623,67 +623,122 @@
         .rating {
             color: var(--highlight);
         }
+            /* Team Section - Modern Glass Style */
+    .team {
+        background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+        padding: 100px 5%;
+        position: relative;
+    }
 
-        /* Development Team Section */
-        .team {
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(0, 206, 201, 0.1));
+    .team-cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 60px;
+    }
+
+    .team-card {
+        width: 320px;
+        background: rgba(26, 26, 46, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        transition: all 0.4s ease;
+        border: 1px solid rgba(108, 92, 231, 0.2);
+    }
+
+    .team-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(108, 92, 231, 0.2);
+        border-color: rgba(108, 92, 231, 0.4);
+    }
+
+    .team-member-photo {
+        width: 100%;
+        height: 350px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .team-member-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .team-card:hover .team-member-photo img {
+        transform: scale(1.05);
+    }
+
+    .team-member-info {
+        padding: 25px;
+        text-align: center;
+    }
+
+    .team-member-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: white;
+    }
+
+    .team-member-role {
+        color: var(--secondary-color);
+        font-size: 1rem;
+        margin-bottom: 15px;
+        font-weight: 500;
+    }
+
+    .team-member-bio {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .team-social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .team-social-links a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(108, 92, 231, 0.2);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .team-social-links a:hover {
+        background: var(--primary-color);
+        transform: translateY(-3px);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .team-member-photo {
+            height: 300px;
         }
-
-        .team-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
+        
         .team-card {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 30px;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.8s forwards;
+            width: 280px;
         }
+    }
 
-        .team-card:nth-child(1) { animation-delay: 0.2s; }
-        .team-card:nth-child(2) { animation-delay: 0.4s; }
-
-        .team-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-hover);
+    @media (max-width: 480px) {
+        .team-member-photo {
+            height: 250px;
         }
-
-        .team-member-info {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .team-member-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 15px;
-            border: 3px solid var(--primary-color);
-        }
-
-        .team-member-details h4 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        .team-member-details p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .team-member-text {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-        }
+    }
+        
 
         /* Download Section */
         .download {
@@ -1153,29 +1208,39 @@
 
     <section id="team" class="team">
         <div class="section-header">
-            <h2 class="section-title">Meet Our <span class="highlight">Development Team</span></h2>
-            <p class="section-subtitle">The brilliant minds behind BRYN, crafting the future of education</p>
+            <h2 class="section-title">Meet Our <span class="highlight">Dream Team</span></h2>
+            <p class="section-subtitle">The brilliant minds bringing BRYN to life</p>
         </div>
         <div class="team-cards">
             <div class="team-card">
+                <div class="team-member-photo">
+                    <img src="{{ url_for('static', filename='Media/manuja.jpg') }}" alt="Manuja Niroshan">
+                </div>
                 <div class="team-member-info">
-                    <img src="{{ url_for('static', filename='Media/manuja.jpg') }}" alt="Team Member 1" class="team-member-avatar">
-                    <div class="team-member-details">
-                        <h4>Manuja Niroshan</h4>
-                        <p>Software Developer</p>
+                    <h3 class="team-member-name">Manuja Niroshan</h3>
+                    <p class="team-member-role">Lead Developer</p>
+                    <p class="team-member-bio">App Developer & UI/UX Designer: Crafts innovative, user-centric mobile and web applications with seamless functionality and visually appealing, intuitive interfaces.</p>
+                    <div class="team-social-links">
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
-                <p class="team-member-text">App Developer & UI/UX Designer: Crafts innovative, user-centric mobile and web applications with seamless functionality and visually appealing, intuitive interfaces.</p>
             </div>
             <div class="team-card">
+                <div class="team-member-photo">
+                    <img src="{{ url_for('static', filename='Media/dinusha.jpg') }}" alt="Dinusha Madushanka">
+                </div>
                 <div class="team-member-info">
-                    <img src="{{ url_for('static', filename='Media/dinusha.jpg') }}" alt="Team Member 2" class="team-member-avatar">
-                    <div class="team-member-details">
-                        <h4>Dinusha Madushanka</h4>
-                        <p>Software Developer</p>
+                    <h3 class="team-member-name">Dinusha Madushanka</h3>
+                    <p class="team-member-role">Software Developer</p>
+                    <p class="team-member-bio">Streamlines app development by simplifying and accelerating the upload process with intuitive tools and seamless integration.</p>
+                    <div class="team-social-links">
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
-                <p class="team-member-text">Streamlines app development by simplifying and accelerating the upload process with intuitive tools and seamless integration.</p>
             </div>
         </div>
     </section>
