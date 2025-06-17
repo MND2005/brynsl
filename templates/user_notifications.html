@@ -266,8 +266,7 @@
             <div class="notification-list">
                 {% for note in notifications %}
                     <div class="notification-card {% if not note.read %}unread{% endif %}" 
-                         onclick="markAsRead('{{ note.id }}')"
-                         data-id="{{ note.id }}">
+                        data-id="{{ note.id }}">
                         <div class="notification-content">
                             <div class="notification-title">
                                 <h3>{{ note.title }}</h3>
@@ -313,50 +312,74 @@
     </div>
 
     <script>
-        function markAsRead(notificationId) {
-            const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
-            
-            // Add visual feedback immediately
-            card.classList.remove('unread');
-            card.style.transform = 'scale(0.98)';
-            
-            setTimeout(() => {
-                card.style.transform = '';
-            }, 200);
-            
-            // Send the request
-            fetch('/notifications/mark_as_read/' + notificationId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update the unread count
-                    const unreadCount = document.querySelectorAll('.unread').length;
-                    document.querySelector('.notification-count').textContent = `${unreadCount} unread`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                card.classList.add('unread');
-            });
-        }
-
-        // Add hover effect with JavaScript for better performance
-        document.querySelectorAll('.notification-card').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                card.style.setProperty('--mouse-x', `${x'}`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-            });
+         function markAsRead(notificationId) {
+        const card = document.querySelector(`.notification-card[data-id="${notificationId}"]`);
+        
+        // Add visual feedback immediately
+        card.classList.remove('unread');
+        card.style.transform = 'scale(0.98)';
+        
+        setTimeout(() => {
+            card.style.transform = '';
+        }, 200);
+        
+        // Send the request
+        fetch('/notifications/mark_as_read/' + notificationId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the unread count
+                const unreadCount = document.querySelectorAll('.unread').length;
+                document.querySelector('.notification-count').textContent = `${unreadCount} unread`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            card.classList.add('unread');
         });
+    }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const notificationCards = document.querySelectorAll('.notification-card.unread');
+        notificationCards.forEach(card => {
+            const notificationId = card.getAttribute('data-id');
+            markAsRead(notificationId);
+        });
+
+        // Set active state for current page
+        const currentPath = window.location.pathname;
+        const buttons = document.querySelectorAll('.nav-btn');
+        buttons.forEach(btn => {
+            const icon = btn.querySelector('i').className;
+            if (
+                (currentPath.includes('dashboard') && icon.includes('fa-comments')) ||
+                (currentPath.includes('notifications') && icon.includes('fa-bell')) ||
+                (currentPath.includes('ideas') && icon.includes('fa-paper-plane')) ||
+                (currentPath.includes('logout') && icon.includes('fa-sign-out-alt'))
+            ) {
+                btn.classList.add('active');
+            }
+        });
+    });
+
+    // Add hover effect with JavaScript for better performance
+    document.querySelectorAll('.notification-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            card.style.setProperty('--mouse-x', `${x}`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
 
         // Set active state for current page
         document.addEventListener('DOMContentLoaded', function() {
