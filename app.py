@@ -14,6 +14,7 @@ from mailersend import emails
 import smtplib
 from email.message import EmailMessage
 import logging
+import random
 
 
 
@@ -97,7 +98,13 @@ def ceo_required(f):
 
 
 # Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+GEMINI_API_KEYS = [
+    os.getenv("GEMINI_API_KEY_1"),
+    os.getenv("GEMINI_API_KEY_2"),
+    os.getenv("GEMINI_API_KEY_3"),
+    os.getenv("GEMINI_API_KEY_4"),
+    os.getenv("GEMINI_API_KEY_5")
+]
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")  # from Firebase > Project Settings > General
@@ -481,6 +488,14 @@ def ask_question():
         image = request.files.get('image')
         image_parts = []
         
+        # Select a random API key and log it
+        selected_api_key = random.choice(GEMINI_API_KEYS)
+        logger.debug(f"Selected Gemini API Key: {selected_api_key}")  # Use logger instead of print
+        
+        # Configure Gemini with the selected key
+        genai.configure(api_key=selected_api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        
         if image:
             # Save temporarily and process
             with tempfile.NamedTemporaryFile(delete=False) as temp:
@@ -505,9 +520,9 @@ def ask_question():
             # For text-only questions, still include language preference
             prompt = f"""
             Chat in {language} language.
-            Do not bold any text and only include texts and imojis.
+            Do not bold any text and only include texts and emojis.
             
-           Answer to input: {question}
+            Answer to input: {question}
             """
             response = model.generate_content(prompt)
         
@@ -516,10 +531,11 @@ def ask_question():
             "response": response.text
         })
     except Exception as e:
+        logger.error(f"Error in ask_question: {str(e)}")
         return jsonify({
             "success": False,
             "error": str(e)
-        })
+        }), 500
 
 @app.route('/logout')
 def logout():
