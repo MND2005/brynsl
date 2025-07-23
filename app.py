@@ -468,19 +468,36 @@ def dashboard():
     user_notifications = user_notifications_ref.child(uid).get() or {}
     unread_count = sum(1 for n in user_notifications.values() if not n.get('read', False))
 
-    today = datetime.date.today()
-    trial_ends = datetime.datetime.strptime(user['trial_ends'], "%Y-%m-%d %H:%M:%S")
-    now = datetime.datetime.now()
-
-    if now > trial_ends and not user['activated']:
-        return render_template('payment_pending.html')
+    # The check for trial/activation status is removed from here.
+    # The user will always be rendered the main dashboard (index.html).
+    # The check will be performed in the '/ask' route instead.
 
     return render_template('index.html', email=user['email'], unread_count=unread_count)
+
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
     if 'uid' not in session:
         return jsonify({"success": False, "error": "Not authenticated"}), 401
+
+    # --- START: New check for trial/subscription status ---
+    uid = session['uid']
+    user_ref = db.reference(f'users/{uid}')
+    user = user_ref.get()
+
+    if user:
+        trial_ends = datetime.datetime.strptime(user['trial_ends'], "%Y-%m-%d %H:%M:%S")
+        now = datetime.datetime.now()
+        is_activated = user.get('activated', False)
+
+        # If trial is over and user is not activated, redirect.
+        if now > trial_ends and not is_activated:
+            return jsonify({
+                "success": False, 
+                "error": "Trial ended or subscription expired.Please check your profile status",
+                "redirect": url_for('payment_pending_page') # A new route for the page
+            }), 403 # Use 403 Forbidden status
+    # --- END: New check ---
 
     try:
         question = request.form.get('question')
@@ -536,6 +553,13 @@ def ask_question():
             "success": False,
             "error": str(e)
         }), 500
+
+@app.route('/payment_pending')
+def payment_pending_page():
+    if 'uid' not in session:
+        return redirect(url_for('login'))
+    return render_template('payment_pending.html')
+
 
 @app.route('/logout')
 def logout():

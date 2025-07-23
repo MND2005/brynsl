@@ -231,6 +231,33 @@
                 padding: 0.5rem;
             }
         }
+        .pay-now-btn {
+    background: linear-gradient(135deg, #ff453a, #ff6b35);
+    color: var(--text-light);
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 69, 58, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pay-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 69, 58, 0.4);
+    background: linear-gradient(135deg, #ff6b35, #ff453a);
+}
+
+.pay-now-btn:active {
+    transform: translateY(0);
+}
     </style>
 </head>
 <body>
@@ -298,6 +325,12 @@
                     <i class="fas {{ 'fa-check-circle' if 'Active' in status else 'fa-exclamation-circle' }}"></i>
                     {{ status.split('(')[0].strip() }}
                 </span>
+                {% if 'Expired' in status %}
+                <button class="pay-now-btn" onclick="handlePayNow()">
+                    <i class="fas fa-credit-card"></i>
+                    Pay Now
+                </button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -320,6 +353,7 @@
         </button>
         
         
+        
     </div>
 
     <script>
@@ -339,6 +373,10 @@
                 }
             });
         });
+       function handlePayNow() {
+            window.location.href = 
+        '/payment_pending';
+        }
     </script>
 </body>
 </html>
