@@ -1297,7 +1297,131 @@
         .app-video:not([src]) + .app-screen {
             display: block;
         }
+        /* Testimonials Section */
+.testimonials {
+    background: var(--dark-bg);
+    padding: 100px 5%;
+}
 
+.testimonial-carousel {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.testimonial-track {
+    display: flex;
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+.testimonial-slide {
+    min-width: 100%;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.testimonial-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    transform: translateY(20px);
+    opacity: 0;
+    animation: fadeInUp 0.8s forwards;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(108, 92, 231, 0.4);
+}
+
+.testimonial-card:nth-child(1) { animation-delay: 0.2s; }
+.testimonial-card:nth-child(2) { animation-delay: 0.4s; }
+.testimonial-card:nth-child(3) { animation-delay: 0.6s; }
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 20px;
+    border: 3px solid var(--primary-color);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.testimonial-quote {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 20px;
+    position: relative;
+    padding: 0 20px;
+}
+
+.testimonial-quote::before,
+.testimonial-quote::after {
+    content: '"';
+    font-size: 2rem;
+    color: var(--primary-color);
+    position: absolute;
+}
+
+.testimonial-quote::before {
+    top: -10px;
+    left: 0;
+}
+
+.testimonial-quote::after {
+    bottom: -10px;
+    right: 0;
+}
+
+.user-info h3 {
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.user-info p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .testimonial-card {
+        padding: 20px;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .testimonial-quote {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonial-quote {
+        font-size: 0.95rem;
+    }
+
+    .user-info h3 {
+        font-size: 1.1rem;
+    }
+}
         /* Animations */
         @keyframes fadeInUp {
             from {
@@ -1448,6 +1572,7 @@
             <a href="#screenshots" class="nav-link">Screenshots</a>
             <a href="#ceo-message" class="nav-link">CEO Message</a>
             <a href="#team" class="nav-link">Team</a>
+            <a href="#testimonials" class="nav-link">Testimonials</a>
             <a href="#download" class="nav-link cta-button">Download</a>
         </div>
         <div class="menu-toggle">
@@ -1460,6 +1585,7 @@
         <a href="#screenshots" class="mobile-nav-link">Screenshots</a>
         <a href="#ceo-message" class="mobile-nav-link">CEO Message</a>
         <a href="#team" class="mobile-nav-link">Team</a>
+        <a href="#testimonials" class="nav-link">Testimonials</a>
         <a href="#download" class="mobile-nav-link cta-button">Download</a>
     </div>
 
@@ -1646,6 +1772,55 @@
         </div>
     </section>
 
+    <section id="testimonials" class="testimonials">
+    <div class="section-header">
+        <h2 class="section-title">What Our <span class="highlight">Users</span> Say</h2>
+        <p class="section-subtitle">Hear from students and educators who love BRYN</p>
+    </div>
+    <div class="testimonial-carousel">
+        <div class="testimonial-track">
+            <div class="testimonial-slide">
+                <div class="testimonial-card">
+                    
+                    <blockquote class="testimonial-quote">
+                        "Loving it 😍"
+                    </blockquote>
+                    <div class="user-info">
+                        <h3>Malindu Kusumsiri</h3>
+                        <p>College Student</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide">
+                <div class="testimonial-card">
+                    
+                    <blockquote class="testimonial-quote">
+                        "I'm generally impressed. The AI tutoring is surprisingly helpful and adapts well to my learning style."
+                    </blockquote>
+                    <div class="user-info">
+                        <h3>Chamod Sankalpa</h3>
+                        <p>University Student</p>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-slide">
+                <div class="testimonial-card">
+                    
+                    <blockquote class="testimonial-quote">
+                        "The app is Very useful .. Thank you 🙂"
+                    </blockquote>
+                    <div class="user-info">
+                        <h3>Ishadi Dinelka</h3>
+                        <p>College Student</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-button prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-button next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    </section>
+
     <section id="download" class="download">
         <div class="download-content">
             <h2 class="download-title">Ready to Transform Your <span class="highlight">Experience</span>?</h2>
@@ -1704,7 +1879,46 @@
                     cursor.style.transform = 'translate(-50%, -50%) scale(1)';
                 });
             });
+            // Testimonials Carousel functionality
+    const testimonialTrack = document.querySelector('.testimonial-track');
+    const testimonialSlides = Array.from(document.querySelectorAll('.testimonial-slide'));
+    const testimonialNextButton = document.querySelector('.testimonial-carousel .carousel-button.next');
+    const testimonialPrevButton = document.querySelector('.testimonial-carousel .carousel-button.prev');
 
+    let testimonialIndex = 0;
+
+    function updateTestimonialCarousel() {
+        testimonialTrack.style.transform = `translateX(-${testimonialIndex * 100}%)`;
+    }
+
+    testimonialNextButton.addEventListener('click', () => {
+        testimonialIndex = (testimonialIndex + 1) % testimonialSlides.length;
+        updateTestimonialCarousel();
+    });
+
+    testimonialPrevButton.addEventListener('click', () => {
+        testimonialIndex = (testimonialIndex - 1 + testimonialSlides.length) % testimonialSlides.length;
+        updateTestimonialCarousel();
+    });
+
+    // Auto-rotate testimonials carousel
+    let testimonialInterval = setInterval(() => {
+        testimonialIndex = (testimonialIndex + 1) % testimonialSlides.length;
+        updateTestimonialCarousel();
+    }, 5000);
+
+    // Pause auto-rotation on hover
+    const testimonialCarousel = document.querySelector('.testimonial-carousel');
+    testimonialCarousel.addEventListener('mouseenter', () => {
+        clearInterval(testimonialInterval);
+    });
+
+    testimonialCarousel.addEventListener('mouseleave', () => {
+        testimonialInterval = setInterval(() => {
+            testimonialIndex = (testimonialIndex + 1) % testimonialSlides.length;
+            updateTestimonialCarousel();
+        }, 5000);
+    });
             // Navbar scroll effect
             const navbar = document.querySelector('.navbar');
             window.addEventListener('scroll', () => {
