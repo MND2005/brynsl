@@ -645,7 +645,7 @@ def admin_activate_user():
             db.reference(f'users/{uid}').update({
                 "activated": True,
                 "payment_date": now.strftime("%Y-%m-%d %H:%M:%S"),
-                "paid_duration_minutes": 5  # 30 days in minutes
+                "paid_duration_minutes": 43200  # 30 days in minutes
             })
             
             # Save transaction details
