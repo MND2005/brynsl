@@ -767,17 +767,30 @@ window.closeCameraModal = function () {
             e.preventDefault();
             const userMessage = questionInput.value.trim();
             const language = document.getElementById('language').value;
+            let imageDataUrl = null;
 
-            if (!userMessage) {
-                showToast('Please enter a message', 'warning');
+            if (!userMessage && !imageInput.files[0]) {
+                showToast('Please enter a message or select an image', 'warning');
                 return;
             }
 
-            addUserMessage(userMessage);
+            // If there's an image, convert it to data URL for display
+            if (imageInput.files[0]) {
+                const reader = new FileReader();
+                const imageReadPromise = new Promise((resolve) => {
+                    reader.onload = function(e) {
+                        resolve(e.target.result);
+                    };
+                    reader.readAsDataURL(imageInput.files[0]);
+                });
+                imageDataUrl = await imageReadPromise;
+            }
+            
+            addUserMessage(userMessage, imageDataUrl);
             showTypingIndicator();
 
             const formData = new FormData();
-            formData.append('question', userMessage);
+            if (userMessage) formData.append('question', userMessage);
             formData.append('language', language);
 
             if (imageInput.files[0]) {
