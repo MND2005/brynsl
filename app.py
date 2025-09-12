@@ -99,6 +99,12 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 SITE_URL = os.getenv("SITE_URL", "https://yoursite.com")  # Your site URL for OpenRouter rankings
 SITE_NAME = os.getenv("SITE_NAME", "BrynSL AI Assistant")  # Your site name for OpenRouter rankings
 
+# Debug: Check if API key is loaded
+if not OPENROUTER_API_KEY:
+    logger.error("OPENROUTER_API_KEY environment variable is not set!")
+else:
+    logger.info(f"OpenRouter API key loaded: {OPENROUTER_API_KEY[:10]}...{OPENROUTER_API_KEY[-4:]}")
+
 # Initialize OpenAI client for OpenRouter
 llama_client = OpenAI(
     api_key=OPENROUTER_API_KEY,
@@ -504,6 +510,14 @@ def ask_question():
         
         logger.debug(f"Using Llama 4 Maverick via OpenRouter API")
         
+        # Check if API key is available
+        if not OPENROUTER_API_KEY:
+            logger.error("OpenRouter API key is missing")
+            return jsonify({
+                "success": False,
+                "error": "AI service configuration error. Please contact support."
+            }), 500
+        
         if image:
             # For image processing with Llama 4 Maverick via OpenRouter
             # Convert image to base64 for API
@@ -584,9 +598,22 @@ User input: {question}"""
         
         if response.status_code != 200:
             logger.error(f"OpenRouter API error: {response.status_code} - {response.text}")
+            
+            # Provide specific error messages based on status code
+            if response.status_code == 401:
+                error_msg = "Invalid API key. Please check your OpenRouter API key configuration."
+            elif response.status_code == 403:
+                error_msg = "Access forbidden. Please check your OpenRouter account permissions."
+            elif response.status_code == 429:
+                error_msg = "Rate limit exceeded. Please try again later."
+            elif response.status_code == 500:
+                error_msg = "OpenRouter service error. Please try again later."
+            else:
+                error_msg = f"AI service error: {response.status_code}"
+                
             return jsonify({
                 "success": False,
-                "error": f"AI service error: {response.status_code}"
+                "error": error_msg
             }), 500
         
         response_data = response.json()
@@ -1217,4 +1244,5 @@ def user_stats():
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    debug_mode = os.getenv("DEBUG", "False").lower() == "true"
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
