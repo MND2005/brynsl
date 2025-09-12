@@ -159,6 +159,19 @@
     </div>
     <div class="toast" id="toast">Copied to clipboard!</div>
 
+    <!-- Image Enlargement Modal -->
+    <div class="image-modal" id="image-modal">
+        <div class="image-modal-content">
+            <button class="image-modal-close" onclick="closeImageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="enlarged-image" src="" alt="Enlarged image">
+            <div class="image-modal-info">
+                Click outside or press ESC to close
+            </div>
+        </div>
+    </div>
+
     <script>
         // Define settingsModal globally
         const settingsModal = document.getElementById('settings-modal');
@@ -342,6 +355,26 @@
                     sendPreview();
                 }
             });
+
+            // Image modal event listeners
+            const imageModal = document.getElementById('image-modal');
+            
+            // Close modal when clicking outside the image
+            imageModal.addEventListener('click', function(e) {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+            
+            // Close modal when pressing ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && imageModal.style.display === 'flex') {
+                    closeImageModal();
+                }
+            });
+            
+            // Add click listeners to existing images on page load
+            addImageClickListeners();
         });
 
         // DOM elements
@@ -795,6 +828,15 @@ window.closeCameraModal = function () {
                 </div>
             `;
             chatMessages.appendChild(messageElement);
+            
+            // Add click listener to the new image if it exists
+            if (imageUrl) {
+                const newImg = messageElement.querySelector('.message-image img');
+                if (newImg) {
+                    newImg.addEventListener('click', handleImageClick);
+                }
+            }
+            
             scrollToBottom();
 
             if (imageUrl && imageId) {
@@ -901,6 +943,7 @@ window.closeCameraModal = function () {
                         }
                     });
                     chatMessages.innerHTML = tempDiv.innerHTML;
+                    addImageClickListeners(); // Add click listeners to loaded images
                     scrollToBottom();
                 }
             } catch (e) {
@@ -946,6 +989,45 @@ window.closeCameraModal = function () {
             }).catch(err => {
                 showToast('Failed to copy', 'error');
             });
+        }
+
+        // Image Modal Functions
+        function openImageModal(imageSrc) {
+            const modal = document.getElementById('image-modal');
+            const enlargedImg = document.getElementById('enlarged-image');
+            
+            enlargedImg.src = imageSrc;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+            
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            modal.classList.remove('show');
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto'; // Restore body scroll
+            }, 300);
+        }
+
+        function addImageClickListeners() {
+            // Add click listeners to all images in chat messages
+            const messageImages = document.querySelectorAll('.message-image img');
+            messageImages.forEach(img => {
+                img.removeEventListener('click', handleImageClick); // Remove existing listener to avoid duplicates
+                img.addEventListener('click', handleImageClick);
+            });
+        }
+
+        function handleImageClick(event) {
+            const imageSrc = event.target.src;
+            if (imageSrc && !imageSrc.includes('data:image/svg+xml')) { // Don't open modal for placeholder images
+                openImageModal(imageSrc);
+            }
         }
 
         // Auto-resize main textarea

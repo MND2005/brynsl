@@ -4,7 +4,7 @@ from firebase_admin import credentials, db, initialize_app
 import requests
 import datetime
 from dotenv import load_dotenv
-import google.generativeai as genai
+from openai import OpenAI
 import os
 import tempfile
 from functools import wraps
@@ -97,15 +97,16 @@ def ceo_required(f):
     return decorated_function
 
 
-# Configure Gemini
-GEMINI_API_KEYS = [
-    os.getenv("GEMINI_API_KEY_1"),
-    os.getenv("GEMINI_API_KEY_2"),
-    os.getenv("GEMINI_API_KEY_3"),
-    os.getenv("GEMINI_API_KEY_4"),
-    os.getenv("GEMINI_API_KEY_5")
-]
-model = genai.GenerativeModel('gemini-2.0-flash')
+# Configure Llama 4 Maverick via OpenRouter
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+SITE_URL = os.getenv("SITE_URL", "https://yoursite.com")  # Your site URL for OpenRouter rankings
+SITE_NAME = os.getenv("SITE_NAME", "BrynSL AI Assistant")  # Your site name for OpenRouter rankings
+
+# Initialize OpenAI client for OpenRouter
+llama_client = OpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1"
+)
 
 FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY")  # from Firebase > Project Settings > General
 
@@ -503,49 +504,100 @@ def ask_question():
         question = request.form.get('question')
         language = request.form.get('language', 'sinhala')  # Default to Sinhala
         image = request.files.get('image')
-        image_parts = []
         
-        # Select a random API key and log it
-        selected_api_key = random.choice(GEMINI_API_KEYS)
-        logger.debug(f"Selected Gemini API Key: {selected_api_key}")  # Use logger instead of print
-        
-        # Configure Gemini with the selected key
-        genai.configure(api_key=selected_api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        logger.debug(f"Using Llama 4 Maverick via OpenRouter API")
         
         if image:
-            # Save temporarily and process
-            with tempfile.NamedTemporaryFile(delete=False) as temp:
-                image.save(temp.name)
-                image_part = {
-                    "mime_type": image.mimetype,
-                    "data": temp.read()
+            # For image processing with Llama 4 Maverick via OpenRouter
+            # Convert image to base64 for API
+            import base64
+            image_data = image.read()
+            image_base64 = base64.b64encode(image_data).decode('utf-8')
+            
+            # Create messages for vision capability using OpenRouter format
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"""You are a helpful educational assistant. Analyze the image and question carefully, then provide a clear, step-by-step solution in {language} language.
+
+IMPORTANT FORMATTING RULES:
+- Use ONLY plain text - NO LaTeX, NO mathematical symbols like $, \\frac, \\lambda, etc.
+- Write mathematical expressions simply: use / for division, * for multiplication, ^ for exponents
+- Use clear headings and bullet points
+- Show all calculation steps clearly
+- Give a final answer at the end
+- Use emojis appropriately to make it engaging
+- Keep explanations simple and educational
+
+User question: {question}"""
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{image.mimetype};base64,{image_base64}"
+                            }
+                        }
+                    ]
                 }
-                image_parts.append(image_part)
-            
-            # Modified prompt with language selection
-            fixed_prompt = f"""
-            Analyze the question, solve it, and give the explanation and answer in {language} language.
-            Do not bold any text and only include texts and emojis.
-            """
-            question = f"{fixed_prompt}\n\nUser question: {question}"
-        
-        # Generate content
-        if image_parts:
-            response = model.generate_content([question, *image_parts])
+            ]
         else:
-            # For text-only questions, still include language preference
-            prompt = f"""
-            Chat in {language} language.
-            Do not bold any text and only include texts and emojis.
-            
-            Answer to input: {question}
-            """
-            response = model.generate_content(prompt)
+            # For text-only questions
+            messages = [
+                {
+                    "role": "user",
+                    "content": f"""You are a helpful assistant. Provide a clear, accurate response in {language} language.
+
+IMPORTANT FORMATTING RULES:
+- Use ONLY plain text - NO LaTeX, NO mathematical symbols like $, \\frac, \\lambda, etc.
+- Write mathematical expressions simply: use / for division, * for multiplication, ^ for exponents
+- For complex problems, show step-by-step solutions
+- Use clear structure with headings and bullet points
+- Use emojis appropriately to make responses engaging
+- Be concise but comprehensive
+- Give practical, actionable answers when applicable
+
+User input: {question}"""
+                }
+            ]
+        
+        # Make direct API call to OpenRouter using requests
+        # This allows us to add the required OpenRouter headers
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": SITE_URL,  # Optional. Site URL for rankings on openrouter.ai
+            "X-Title": SITE_NAME,  # Optional. Site title for rankings on openrouter.ai
+        }
+        
+        payload = {
+            "model": "meta-llama/llama-4-maverick:free",
+            "messages": messages,
+            "max_tokens": 1500,
+            "temperature": 0.7
+        }
+        
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        
+        if response.status_code != 200:
+            logger.error(f"OpenRouter API error: {response.status_code} - {response.text}")
+            return jsonify({
+                "success": False,
+                "error": f"AI service error: {response.status_code}"
+            }), 500
+        
+        response_data = response.json()
+        ai_response = response_data['choices'][0]['message']['content']
         
         return jsonify({
             "success": True,
-            "response": response.text
+            "response": ai_response
         })
     except Exception as e:
         logger.error(f"Error in ask_question: {str(e)}")
