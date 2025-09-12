@@ -8,13 +8,10 @@ from openai import OpenAI
 import os
 import tempfile
 from functools import wraps
-from functools import wraps
 import random
-from mailersend import emails
 import smtplib
 from email.message import EmailMessage
 import logging
-import random
 
 
 
