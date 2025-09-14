@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Tuition Requests - BRYN</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --glow-blue: #4dabff;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #060609;
+            --card-bg: rgba(26, 26, 36, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: rgba(77, 171, 255, 0.15);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatingAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 80%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(77, 171, 255, 0.15) 0%, transparent 50%),
+                        linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(77, 171, 255, 0.1);
+            border-radius: 50%;
+            animation: floatingAnimation 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 90%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 10px; height: 10px; top: 80%; left: 20%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 4px; height: 4px; top: 30%; left: 80%; animation-delay: 6s; }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s ease-out;
+            position: relative;
+            padding-top: 20px; /* Reduce padding to bring content closer */
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .new-request-header-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .new-request-header-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: -10px; /* Position just above the header content but still visible */
+            left: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            background: rgba(77, 171, 255, 0.2);
+            transform: scale(1.05);
+            color: var(--glow-blue);
+            text-decoration: none;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .requests-container {
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .request-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--glow-blue);
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .request-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .request-subject {
+            color: var(--glow-blue);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .status-in_progress {
+            background: rgba(77, 171, 255, 0.2);
+            color: var(--glow-blue);
+            border: 1px solid var(--glow-blue);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .request-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+        }
+
+        .request-description {
+            background: rgba(77, 171, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--glow-blue);
+        }
+
+        .request-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .request-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .chat-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .new-request-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .new-request-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            padding: 12px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .nav-btn:hover {
+            color: var(--glow-blue);
+            background: rgba(77, 171, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(77, 171, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .header {
+                padding-top: 25px; /* Adjust padding for mobile */
+            }
+
+            .header-actions {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+
+            .header-actions > div:first-child {
+                display: none;
+            }
+
+            .back-btn {
+                top: -15px; /* Adjust position for mobile visibility */
+            }
+
+            .request-card {
+                padding: 20px;
+            }
+
+            .request-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                margin-bottom: 12px;
+            }
+
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+
+            .request-footer {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .chat-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding-top: 30px; /* Adjust for very small screens */
+            }
+
+            .back-btn {
+                top: -20px; /* Position for small screen visibility */
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .request-card {
+                padding: 15px;
+            }
+
+            .empty-state {
+                padding: 40px 15px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <a href="{{ url_for('main_dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-actions">
+                <div></div>
+                <div style="text-align: center;">
+                    <h1 class="page-title">My Tuition Requests</h1>
+                    <p class="page-subtitle">Track and manage your tuition requests</p>
+                </div>
+                <a href="{{ url_for('tuition_form') }}" class="new-request-header-btn">
+                    <i class="fas fa-plus"></i> New Request
+                </a>
+            </div>
+        </div>
+
+        <div class="requests-container">
+            {% if requests %}
+                {% for request in requests %}
+                <div class="request-card" onclick="window.location.href='{{ url_for('tuition_chat', request_id=request.id) }}'">
+                    <div class="request-header">
+                        <div>
+                            <h3 class="request-title">{{ request.title }}</h3>
+                            <p class="request-subject">{{ request.subject }}</p>
+                        </div>
+                        <span class="status-badge status-{{ request.status }}">
+                            {% if request.status == 'pending' %}
+                                Pending
+                            {% elif request.status == 'in_progress' %}
+                                In Progress
+                            {% elif request.status == 'completed' %}
+                                Completed
+                            {% else %}
+                                {{ request.status|title }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="request-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Education Level:</span>
+                            <span class="detail-value">{{ request.education_level or 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Service Type:</span>
+                            <span class="detail-value">{{ request.service_type }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">WhatsApp:</span>
+                            <span class="detail-value">{{ request.whatsapp_no }}</span>
+                        </div>
+                    </div>
+
+                    <div class="request-description">
+                        <strong>Topic Description:</strong><br>
+                        {{ request.title }}
+                    </div>
+
+                    <div class="request-footer">
+                        <span class="request-date">
+                            <i class="fas fa-calendar"></i> 
+                            {{ request.created_at }}
+                        </span>
+                        <a href="{{ url_for('tuition_chat', request_id=request.id) }}" class="chat-btn" onclick="event.stopPropagation()">
+                            <i class="fas fa-comments"></i> Open Chat
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 class="empty-title">No Tuition Requests Yet</h3>
+                    <p class="empty-text">You haven't submitted any tuition requests. Start by creating your first request to connect with our expert tutors.</p>
+                    <a href="{{ url_for('tuition_form') }}" class="new-request-btn">
+                        <i class="fas fa-plus"></i> Create New Request
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('main_dashboard') }}'">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('chat_interface') }}'">
+            <i class="fas fa-comments"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('profile') }}'">
+            <i class="fas fa-user"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('user_notifications') }}'">
+            <i class="fas fa-bell"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('ideas') }}'">
+            <i class="fas fa-lightbulb"></i>
+        </button>
+    </div>
+</body>
+</html>

@@ -258,6 +258,34 @@
 .pay-now-btn:active {
     transform: translateY(0);
 }
+
+.edit-profile-btn {
+    background: linear-gradient(135deg, #007AFF, #005EC2);
+    color: var(--text-light);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 122, 255, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    background: linear-gradient(135deg, #005EC2, #007AFF);
+}
+
+.edit-profile-btn:active {
+    transform: translateY(0);
+}
     </style>
 </head>
 <body>
@@ -269,6 +297,10 @@
         <p class="user-email">
             <i class="fas fa-envelope"></i> {{ email }}
         </p>
+        <button class="edit-profile-btn" onclick="window.location.href='{{ url_for('edit_profile') }}'">
+            <i class="fas fa-edit"></i>
+            Edit Profile
+        </button>
     </div>
 
     <div class="profile-card">
@@ -305,6 +337,19 @@
                 {% endif %}
             </div>
         </div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-graduation-cap"></i> Education Level
+            </div>
+            <div class="detail-value">
+                {% if education_level %}
+                    {{ education_level }}
+                {% else %}
+                    Not specified
+                {% endif %}
+            </div>
+        </div>
 
         <div class="section-title" style="margin-top: 1.5rem;">Account Details</div>
         
@@ -333,20 +378,136 @@
                 {% endif %}
             </div>
         </div>
+        
+        {% if last_login %}
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-clock"></i> Last Login
+            </div>
+            <div class="detail-value">{{ last_login }}</div>
+        </div>
+        {% endif %}
+        
+        {% if trial_ends %}
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-calendar-times"></i> Trial Period
+            </div>
+            <div class="detail-value">{{ trial_ends }}</div>
+        </div>
+        {% endif %}
+        
+        {% if payment_date %}
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-credit-card"></i> Payment Date
+            </div>
+            <div class="detail-value">{{ payment_date }}</div>
+        </div>
+        {% endif %}
+        
+        {% if paid_duration_minutes %}
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-hourglass-half"></i> Subscription Duration
+            </div>
+            <div class="detail-value">{{ (paid_duration_minutes / 1440) | int }} days</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="profile-card">
+        <div class="section-title">Activity Statistics</div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-lightbulb"></i> Ideas Submitted
+            </div>
+            <div class="detail-value">
+                {{ user_ideas_count or 0 }}
+                {% if latest_idea_date %}
+                <span class="age-badge">Latest: {{ latest_idea_date }}</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-bell"></i> Notifications
+            </div>
+            <div class="detail-value">
+                Total: {{ total_notifications or 0 }}
+                {% if unread_notifications > 0 %}
+                <span class="status-badge status-inactive">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ unread_notifications }} Unread
+                </span>
+                {% else %}
+                <span class="status-badge status-active">
+                    <i class="fas fa-check-circle"></i>
+                    All Read
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-bookmark"></i> Bookmarks
+            </div>
+            <div class="detail-value">{{ bookmarks_count or 0 }} saved items</div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-graduation-cap"></i> Tuition Requests
+            </div>
+            <div class="detail-value">{{ tuition_requests_count or 0 }} requests</div>
+        </div>
+    </div>
+
+    <div class="profile-card">
+        <div class="section-title">System Information</div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-key"></i> User ID
+            </div>
+            <div class="detail-value" style="font-family: monospace; font-size: 0.85rem; word-break: break-all;">{{ uid }}</div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-shield-alt"></i> Account Type
+            </div>
+            <div class="detail-value">
+                {% if activated %}
+                <span class="status-badge status-active">
+                    <i class="fas fa-crown"></i>
+                    Premium Member
+                </span>
+                {% else %}
+                <span class="status-badge status-inactive">
+                    <i class="fas fa-user"></i>
+                    Trial Member
+                </span>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <div class="bottom-nav">
-        <button class="nav-btn" onclick="window.location.href='{{ url_for('dashboard') }}'">
-            <i class="fas fa-comments"></i>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('main_dashboard') }}'">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('profile') }}'">
+            <i class="fas fa-user"></i>
         </button>
         <button class="nav-btn" onclick="window.location.href='{{ url_for('user_notifications') }}'">
             <i class="fas fa-bell"></i>
         </button>
         <button class="nav-btn" onclick="window.location.href='{{ url_for('ideas') }}'">
             <i class="fas fa-paper-plane"></i>
-        </button>
-        <button class="nav-btn" onclick="window.location.href='{{ url_for('home') }}'">
-            <i class="fas fa-info-circle"></i>
         </button>
         <button class="nav-btn" onclick="window.location.href='{{ url_for('logout') }}'">
             <i class="fas fa-sign-out-alt"></i>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tuition Request - BRYN</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --glow-blue: #4dabff;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #060609;
+            --card-bg: rgba(26, 26, 36, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: rgba(77, 171, 255, 0.15);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatingAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 80%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(77, 171, 255, 0.15) 0%, transparent 50%),
+                        linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(77, 171, 255, 0.1);
+            border-radius: 50%;
+            animation: floatingAnimation 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 90%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 10px; height: 10px; top: 80%; left: 20%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 4px; height: 4px; top: 30%; left: 80%; animation-delay: 6s; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            z-index: 1;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .back-btn:hover {
+            background: rgba(77, 171, 255, 0.2);
+            transform: scale(1.05);
+            color: var(--glow-blue);
+            text-decoration: none;
+        }
+
+        .logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 15px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .form-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--darker-bg);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--glow-blue);
+            box-shadow: 0 0 0 3px rgba(77, 171, 255, 0.2);
+            background: rgba(6, 6, 9, 0.8);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(26, 115, 232, 0.6);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-card {
+                padding: 25px 20px;
+                margin: 0 10px;
+            }
+
+            .form-title {
+                font-size: 1.8rem;
+            }
+
+            .back-btn {
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .form-card {
+                padding: 20px 15px;
+            }
+
+            .form-title {
+                font-size: 1.6rem;
+            }
+
+            .form-input, .form-select, .form-textarea {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <a href="{{ url_for('main_dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <div class="header">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="BRYN Logo" class="logo">
+        <h1 class="form-title">Tuition Request</h1>
+        <p class="form-subtitle">Connect with our expert tutors for personalized learning</p>
+    </div>
+
+    <div class="form-container">
+        <div class="form-card">
+            <form method="POST" action="{{ url_for('submit_tuition_request') }}" id="tuitionForm">
+                <div class="form-group">
+                    <label class="form-label" for="name">Your Name</label>
+                    <input type="text" id="name" name="name" class="form-input" 
+                           value="{{ user.name if user else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="education_level">Education Level</label>
+                    <select id="education_level" name="education_level" class="form-select" required>
+                        <option value="">Select your education level</option>
+                        <option value="Grade 1-5" {% if user and user.education_level == 'Grade 1-5' %}selected{% endif %}>Grade 1-5</option>
+                        <option value="Grade 6-9" {% if user and user.education_level == 'Grade 6-9' %}selected{% endif %}>Grade 6-9</option>
+                        <option value="O/L" {% if user and user.education_level == 'O/L' %}selected{% endif %}>O/L</option>
+                        <option value="A/L" {% if user and user.education_level == 'A/L' %}selected{% endif %}>A/L</option>
+                        <option value="University" {% if user and user.education_level == 'University' %}selected{% endif %}>University</option>
+                        <option value="Other" {% if user and user.education_level == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="whatsapp">WhatsApp Number</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" class="form-input" 
+                           placeholder="e.g., +94771234567" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" class="form-input" 
+                           placeholder="e.g., Mathematics, Physics, Chemistry" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="title">Title/Topic You Want to Explain</label>
+                    <textarea id="title" name="title" class="form-textarea" 
+                              placeholder="Describe the specific topic or problem you need help with..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="service_type">Select Service Type</label>
+                    <select id="service_type" name="service_type" class="form-select" required>
+                        <option value="">Choose a service type</option>
+                        <option value="Live Class">Live Class</option>
+                        <option value="Live Chat to explain problems">Live Chat to explain problems</option>
+                        <option value="Paper discussion">Paper discussion</option>
+                        <option value="Small discussion sessions">Small discussion sessions</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('tuitionForm').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('title');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>

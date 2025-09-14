@@ -388,6 +388,11 @@ textarea {
     opacity: 1;
 }
 
+/* Always show Pay Now button */
+.message-actions:has(.pay-now-btn) {
+    opacity: 1;
+}
+
 .copy-btn {
     background: none;
     border: none;

@@ -123,65 +123,147 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
         }
 
         .stat-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 0;
             position: relative;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(30px) scale(0.95);
-            animation: cardEntrance var(--animation-duration) ease-out forwards;
-            animation-delay: calc(var(--card-index) * 0.1s);
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-12px) scale(1.05);
         }
 
         .stat-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -150%;
-            width: 200%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-            transition: left 0.7s ease;
-            z-index: 0;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            transition: all 0.4s ease;
         }
 
         .stat-card:hover::before {
-            left: 150%;
+            opacity: 1;
+            width: 140px;
+            height: 140px;
         }
 
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+        .stat-icon {
+            width: 4.5rem;
+            height: 4.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.2rem;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .stat-card h3 {
-            font-size: 1.2rem;
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(25px);
+            opacity: 0.4;
+            z-index: -1;
+            transform: scale(1.2);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .stat-icon.primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+        }
+
+        .stat-icon.accent {
+            background: linear-gradient(135deg, var(--accent-color), #0891b2);
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
             font-weight: 500;
-            color: var(--primary-color);
+            color: var(--text-muted);
             margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
-        .stat-card p {
-            font-size: 1.5rem;
-            font-weight: 600;
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
             color: var(--text-color);
-            position: relative;
-            z-index: 1;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-number {
+            text-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-description {
+            font-size: 0.75rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover .stat-description {
+            opacity: 1;
+        }
+
+        .stat-description.positive {
+            color: var(--success-color);
+        }
+
+        .stat-description.negative {
+            color: var(--error-color);
+        }
+
+        .stat-description.neutral {
+            color: var(--text-muted);
         }
 
         .chart-container {
@@ -301,6 +383,111 @@
             transform: translateX(-5px) rotate(-10deg);
         }
 
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-box:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--glass-shadow-lg);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .chart-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-box h3::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+
+        .chart-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chart-box canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background: var(--glass-bg-light);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .pagination-btn:hover:not(.disabled) {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .pagination-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .pagination-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0 1rem;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 0.75rem;
@@ -360,90 +547,204 @@
                 font-size: 1.2rem;
             }
 
+            .chart-container {
+                padding: 1rem;
+            }
+
+            .charts-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .chart-box {
+                height: 300px;
+                padding: 1rem;
+            }
+
+            .pie-chart-container {
+                max-width: 200px;
+                max-height: 200px;
+            }
+
+            .users-table {
+                padding: 1rem;
+                overflow-x: auto;
+            }
+
             .users-table th, .users-table td {
-                font-size: 0.8rem;
-                padding: 0.5rem;
+                font-size: 0.75rem;
+                padding: 0.5rem 0.25rem;
+                white-space: nowrap;
             }
 
             .back-link {
-                max-width: 200px;
-                font-size: 0.85rem;
+                max-width: 240px;
+                font-size: 0.875rem;
             }
         }
     </style>
 
     <div class="container">
-        <div class="header animate-fadeIn">
-            <h1>User Statistics</h1>
-            <p>Comprehensive analytics and insights into user activity and engagement.</p>
+        <div class="header">
+            <h1>User Analytics Dashboard</h1>
+            <p>Comprehensive insights and analytics for user engagement, growth trends, and platform performance metrics.</p>
         </div>
 
-        <div class="filter-container animate-fadeIn delay-1">
-            <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
-            <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
-            <select id="status_filter" name="status">
-                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
-                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
-                <option value="trial" {% if status_filter == 'trial' %}selected{% endif %}>Trial</option>
-                <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
-            </select>
-            <button onclick="applyFilters()">Apply Filters</button>
+        <div class="filter-container">
+            <div class="filter-group">
+                <label class="filter-label">Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">End Date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Status Filter</label>
+                <select id="status_filter" name="status">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Users</option>
+                    <option value="trial" {% if status_filter == 'trial' %}selected{% endif %}>Trial Users</option>
+                    <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired Users</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">&nbsp;</label>
+                <button onclick="applyFilters()">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Education Level Distribution Pie Chart -->
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h3>Education Level Distribution</h3>
+                <div class="chart-content">
+                    <div class="pie-chart-container">
+                        <canvas id="educationLevelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <h3>User Signup Trend</h3>
+                <div class="chart-content">
+                    <canvas id="signupChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <h3>Idea Submission Trend</h3>
+                <div class="chart-content">
+                    <canvas id="ideaChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 0;">
-                <h3>Total Users</h3>
-                <p>{{ total_users }}</p>
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-label">Total Users</div>
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-description neutral">
+                    <span>All registered users</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 1;">
-                <h3>Active Users</h3>
-                <p>{{ active_users }}</p>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-label">Active Users</div>
+                <div class="stat-number">{{ active_users }}</div>
+                <div class="stat-description positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Currently active</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 2;">
-                <h3>Trial Users</h3>
-                <p>{{ trial_users }}</p>
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-user-clock"></i>
+                </div>
+                <div class="stat-label">Trial Users</div>
+                <div class="stat-number">{{ trial_users }}</div>
+                <div class="stat-description neutral">
+                    <span>In trial period</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 3;">
-                <h3>Expired Users</h3>
-                <p>{{ expired_users }}</p>
+            <div class="stat-card">
+                <div class="stat-icon accent">
+                    <i class="fas fa-user-times"></i>
+                </div>
+                <div class="stat-label">Expired Users</div>
+                <div class="stat-number">{{ expired_users }}</div>
+                <div class="stat-description negative">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>Subscription ended</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 4;">
-                <h3>Total Ideas</h3>
-                <p>{{ total_ideas }}</p>
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="stat-label">Total Ideas</div>
+                <div class="stat-number">{{ total_ideas }}</div>
+                <div class="stat-description neutral">
+                    <span>Ideas submitted</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 5;">
-                <h3>Avg. Ideas per User</h3>
-                <p>{{ avg_ideas_per_user }}</p>
+            <div class="stat-card">
+                <div class="stat-icon accent">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-label">Avg. Ideas per User</div>
+                <div class="stat-number">{{ avg_ideas_per_user }}</div>
+                <div class="stat-description neutral">
+                    <span>Average engagement</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 6;">
-                <h3>Total Notifications</h3>
-                <p>{{ total_notifications }}</p>
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-label">Total Notifications</div>
+                <div class="stat-number">{{ total_notifications }}</div>
+                <div class="stat-description neutral">
+                    <span>Notifications sent</span>
+                </div>
             </div>
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 7;">
-                <h3>Notification Read Rate</h3>
-                <p>{{ read_rate }}%</p>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+                <div class="stat-label">Read Rate</div>
+                <div class="stat-number">{{ read_rate }}%</div>
+                <div class="stat-description positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Engagement rate</span>
+                </div>
             </div>
             {% if is_ceo %}
-            <div class="stat-card animate-fadeIn delay-2" style="--card-index: 8;">
-                <h3>Total Revenue</h3>
-                <p>${{ total_revenue }}</p>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-number">${{ total_revenue }}</div>
+                <div class="stat-description positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Revenue generated</span>
+                </div>
             </div>
             {% endif %}
         </div>
 
-        <div class="chart-container">
-            <h3>Signup Trend</h3>
-            <canvas id="signupChart"></canvas>
-        </div>
 
-        <div class="chart-container">
-            <h3>Idea Submission Trend</h3>
-            <canvas id="ideaChart"></canvas>
-        </div>
 
         {% if is_ceo and recent_transactions %}
         <div class="users-table">
-            <h3>Recent Transactions</h3>
+            <h3 class="section-title">Recent Transactions</h3>
             <table>
                 <thead>
                     <tr>
@@ -456,7 +757,7 @@
                     {% for trans in recent_transactions %}
                     <tr>
                         <td>{{ trans.user_email }}</td>
-                        <td>${{ trans.amount }}</td>
+                        <td><span class="status-badge success">${{ trans.amount }}</span></td>
                         <td>{{ trans.timestamp }}</td>
                     </tr>
                     {% endfor %}
@@ -466,7 +767,11 @@
         {% endif %}
 
         <div class="users-table">
-            <h3>User Details</h3>
+            <h3 class="section-title">User Details</h3>
+            <div class="pagination-info" style="margin-bottom: 1rem; text-align: center;">
+                Showing {{ ((current_page - 1) * 10 + 1) if users else 0 }} to {{ (current_page - 1) * 10 + users|length }} of {{ total_filtered_users }} users
+            </div>
+            {% if users %}
             <table>
                 <thead>
                     <tr>
@@ -481,19 +786,160 @@
                     <tr>
                         <td>{{ user.email }}</td>
                         <td>{{ user.name }}</td>
-                        <td>{{ user.status|capitalize }}</td>
+                        <td><span class="status-badge {{ user.status }}">{{ user.status }}</span></td>
                         <td>{{ user.signup_date }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            
+            <!-- Pagination Controls -->
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                <!-- Previous Button -->
+                {% if has_prev %}
+                    <a href="?page={{ prev_page }}&start_date={{ start_date }}&end_date={{ end_date }}&status={{ status_filter }}" class="pagination-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                {% else %}
+                    <span class="pagination-btn disabled">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </span>
+                {% endif %}
+                
+                <!-- Page Numbers -->
+                {% set start_page = [1, current_page - 2]|max %}
+                {% set end_page = [total_pages, current_page + 2]|min %}
+                
+                {% if start_page > 1 %}
+                    <a href="?page=1&start_date={{ start_date }}&end_date={{ end_date }}&status={{ status_filter }}" class="pagination-btn">1</a>
+                    {% if start_page > 2 %}
+                        <span class="pagination-btn disabled">...</span>
+                    {% endif %}
+                {% endif %}
+                
+                {% for page_num in range(start_page, end_page + 1) %}
+                    {% if page_num == current_page %}
+                        <span class="pagination-btn active">{{ page_num }}</span>
+                    {% else %}
+                        <a href="?page={{ page_num }}&start_date={{ start_date }}&end_date={{ end_date }}&status={{ status_filter }}" class="pagination-btn">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if end_page < total_pages %}
+                    {% if end_page < total_pages - 1 %}
+                        <span class="pagination-btn disabled">...</span>
+                    {% endif %}
+                    <a href="?page={{ total_pages }}&start_date={{ start_date }}&end_date={{ end_date }}&status={{ status_filter }}" class="pagination-btn">{{ total_pages }}</a>
+                {% endif %}
+                
+                <!-- Next Button -->
+                {% if has_next %}
+                    <a href="?page={{ next_page }}&start_date={{ start_date }}&end_date={{ end_date }}&status={{ status_filter }}" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% else %}
+                    <span class="pagination-btn disabled">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4>No Users Found</h4>
+                <p>No users match the current filter criteria.</p>
+            </div>
+            {% endif %}
         </div>
 
-        
+        <div style="text-align: center;">
+            <a href="{{ url_for('main_dashboard') }}" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
+        // Education Level Pie Chart
+        const educationCtx = document.getElementById('educationLevelChart').getContext('2d');
+        const educationData = {
+            labels: [{% for level, count in education_level_stats.items() %}'{{ level }}',{% endfor %}],
+            datasets: [{
+                data: [{% for level, count in education_level_stats.items() %}{{ count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(115, 103, 240, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(199, 199, 199, 0.8)',
+                    'rgba(83, 102, 255, 0.8)',
+                    'rgba(255, 99, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(115, 103, 240, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(199, 199, 199, 1)',
+                    'rgba(83, 102, 255, 1)',
+                    'rgba(255, 99, 255, 1)'
+                ],
+                borderWidth: 2
+            }]
+        };
+
+        new Chart(educationCtx, {
+            type: 'pie',
+            data: educationData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(248, 249, 250, 0.9)',
+                            font: {
+                                size: 12
+                            },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 30, 45, 0.9)',
+                        titleColor: 'rgba(248, 249, 250, 1)',
+                        bodyColor: 'rgba(248, 249, 250, 0.8)',
+                        borderColor: 'rgba(115, 103, 240, 0.5)',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    arc: {
+                        borderWidth: 2
+                    }
+                }
+            }
+        });
+
         // Apply filters
         function applyFilters() {
             const startDate = document.getElementById('start_date').value;
@@ -505,6 +951,7 @@
             if (endDate) url.searchParams.set('end_date', endDate);
             else url.searchParams.delete('end_date');
             url.searchParams.set('status', status);
+            url.searchParams.set('page', '1'); // Reset to first page when filters change
             window.location = url;
         }
 

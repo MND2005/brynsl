@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tuition Chat - BRYN</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --glow-blue: #4dabff;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #060609;
+            --card-bg: rgba(26, 26, 36, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: rgba(77, 171, 255, 0.15);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes floatingAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 80%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(77, 171, 255, 0.15) 0%, transparent 50%),
+                        linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(77, 171, 255, 0.1);
+            border-radius: 50%;
+            animation: floatingAnimation 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 90%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 10px; height: 10px; top: 80%; left: 20%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 4px; height: 4px; top: 30%; left: 80%; animation-delay: 6s; }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 20px 20px;
+            backdrop-filter: blur(20px);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-out;
+            margin: 0 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--glow-blue);
+            background: rgba(77, 171, 255, 0.1);
+        }
+
+        .header-info h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .status-in_progress {
+            background: rgba(77, 171, 255, 0.2);
+            color: var(--glow-blue);
+            border: 1px solid var(--glow-blue);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            max-width: 85%;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .message-content {
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .message-sender {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-text {
+            line-height: 1.6;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            color: var(--text-primary);
+        }
+
+        .system-message {
+            align-self: center;
+            max-width: 90%;
+        }
+
+        .system-message .message-content {
+            background: rgba(77, 171, 255, 0.1);
+            border-color: var(--glow-blue);
+            text-align: center;
+        }
+
+        .system-message .message-sender {
+            color: var(--glow-blue);
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+
+        .user-message .message-sender {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .admin-message {
+            align-self: flex-start;
+        }
+
+        .admin-message .message-content {
+            background: var(--card-bg);
+            border-bottom-left-radius: 8px;
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px 20px 0 0;
+            backdrop-filter: blur(20px);
+            margin: 0 10px;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            resize: none;
+            max-height: 120px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            background: var(--darker-bg);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+        }
+
+        #messageInput::placeholder {
+            color: var(--text-secondary);
+        }
+
+        #messageInput:focus {
+            border-color: var(--glow-blue);
+            box-shadow: 0 0 0 3px rgba(77, 171, 255, 0.2);
+            background: rgba(6, 6, 9, 0.8);
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.4);
+            margin-bottom: 5px;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(26, 115, 232, 0.6);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .user-message .timestamp {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .toast.success {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .toast.error {
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 768px) {
+            .chat-header {
+                padding: 15px;
+                margin: 0 5px;
+            }
+
+            .header-info h1 {
+                font-size: 1.2rem;
+            }
+
+            .header-subtitle {
+                font-size: 0.8rem;
+            }
+
+            .chat-messages {
+                padding: 15px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .message-content {
+                padding: 12px 16px;
+            }
+
+            .chat-input {
+                padding: 15px;
+                margin: 0 5px;
+            }
+
+            #messageInput {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .send-button {
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="window.location.href='{{ url_for('my_tuition_requests') }}'">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="header-info">
+                    <h1>{{ request_data.subject }}</h1>
+                    <p class="header-subtitle">{{ request_data.education_level or 'Education level not specified' }} | {{ request_data.service_type }}</p>
+                </div>
+            </div>
+            <span class="status-badge status-{{ request_data.status }}">
+                {% if request_data.status == 'pending' %}
+                    Pending
+                {% elif request_data.status == 'in_progress' %}
+                    In Progress
+                {% elif request_data.status == 'completed' %}
+                    Completed
+                {% else %}
+                    {{ request_data.status|title }}
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            {% if chat_data.messages %}
+                {% for message_id, message in chat_data.messages.items() %}
+                    {% if message.sender_type == 'system' %}
+                        <div class="message system-message">
+                            <div class="message-content">
+                                <div class="message-sender">System</div>
+                                <div class="message-text">{{ message.message }}</div>
+                                <div class="timestamp">{{ message.timestamp }}</div>
+                            </div>
+                        </div>
+                    {% elif message.sender_type == 'user' %}
+                        <div class="message user-message">
+                            <div class="message-content">
+                                <div class="message-sender">You</div>
+                                <div class="message-text">{{ message.message }}</div>
+                                <div class="timestamp">{{ message.timestamp }}</div>
+                            </div>
+                        </div>
+                    {% elif message.sender_type == 'admin' %}
+                        <div class="message admin-message">
+                            <div class="message-content">
+                                <div class="message-sender">Tutor</div>
+                                <div class="message-text">{{ message.message }}</div>
+                                <div class="timestamp">{{ message.timestamp }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="chat-input">
+            <form id="messageForm" class="input-group">
+                <textarea id="messageInput" name="message" placeholder="Type your message..." rows="1" required></textarea>
+                <button type="submit" class="send-button" id="sendButton">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatMessages = document.getElementById('chatMessages');
+        const toast = document.getElementById('toast');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Allow Shift+Enter for new line, Enter to submit
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Handle form submission
+        messageForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Disable send button
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            // Add message to UI immediately
+            addMessageToUI('user', 'You', message);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+
+            try {
+                const formData = new FormData();
+                formData.append('message', message);
+
+                const response = await fetch(`/tuition-chat/{{ request_id }}/send`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    showToast(data.error || 'Failed to send message', 'error');
+                    // Remove the message from UI if failed
+                    const lastMessage = chatMessages.lastElementChild;
+                    if (lastMessage && lastMessage.classList.contains('user-message')) {
+                        lastMessage.remove();
+                    }
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+                console.error('Error sending message:', error);
+            } finally {
+                // Re-enable send button
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        });
+
+        function addMessageToUI(senderType, senderName, message) {
+            const messageElement = document.createElement('div');
+            const timestamp = new Date().toLocaleString();
+            
+            messageElement.className = `message ${senderType}-message`;
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">${senderName}</div>
+                    <div class="message-text">${message.replace(/\n/g, '<br>')}</div>
+                    <div class="timestamp">${timestamp}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Auto-scroll to bottom on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+        });
+
+        // Poll for new messages every 3 seconds
+        let lastMessageTime = '{{ chat_data.last_message_time or "" }}';
+        
+        async function pollForMessages() {
+            try {
+                const response = await fetch(`/tuition-chat/{{ request_id }}/messages?since=${encodeURIComponent(lastMessageTime)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.messages && data.messages.length > 0) {
+                        data.messages.forEach(message => {
+                            if (message.sender_type === 'admin') {
+                                addMessageToUI('admin', 'Tutor', message.message);
+                            }
+                        });
+                        lastMessageTime = data.last_message_time;
+                    }
+                }
+            } catch (error) {
+                console.error('Error polling for messages:', error);
+            }
+        }
+
+        // Start polling for new messages
+        setInterval(pollForMessages, 3000);
+    </script>
+</body>
+</html>

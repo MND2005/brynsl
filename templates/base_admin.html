@@ -280,9 +280,24 @@
                     <i class="bi bi-chat-dots me-2"></i>User Feedbacks
                 </a>
             </li>
-            <li class="nav-item animate-fadeIn delay-3">
+            <li class="nav-item animate-fadeIn delay-4">
+                <a class="nav-link {{ 'active' if active_page == 'features' }}" href="{{ url_for('admin_features') }}">
+                    <i class="bi bi-toggles me-2"></i>Feature Management
+                </a>
+            </li>
+            <li class="nav-item animate-fadeIn delay-5">
+                <a class="nav-link {{ 'active' if active_page == 'tuition_requests' }}" href="{{ url_for('admin_tuition_requests') }}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Tuition Requests
+                </a>
+            </li>
+            <li class="nav-item animate-fadeIn delay-6">
+                <a class="nav-link {{ 'active' if active_page == 'papers' }}" href="{{ url_for('admin_papers') }}">
+                    <i class="fas fa-file-alt me-2"></i>Paper Management
+                </a>
+            </li>
+            <li class="nav-item animate-fadeIn delay-7">
                 <a class="nav-link {{ 'active' if active_page == 'user_stats' }}" href="{{ url_for('user_stats') }}">
-                    <i class="bi bi-graph-up me-2"></i></i>User Analyze
+                    <i class="bi bi-graph-up me-2"></i>User Analyze
                 </a>
             </li>
             <li class="nav-item mt-4 animate-fadeIn">

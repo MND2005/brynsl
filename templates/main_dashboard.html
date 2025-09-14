@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Dashboard - BRYN</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --glow-blue: #4dabff;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #060609;
+            --card-bg: rgba(15, 15, 25, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: rgba(77, 171, 255, 0.15);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(77, 171, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(77, 171, 255, 0.6); }
+        }
+
+        @keyframes floatingAnimation {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at 20% 80%, rgba(26, 115, 232, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(77, 171, 255, 0.15) 0%, transparent 50%),
+                        linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            max-height: 100vh;
+            position: relative;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .top-menu-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-menu {
+            position: relative;
+        }
+
+        .notification-toggle {
+            width: 45px;
+            height: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .notification-toggle:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(26, 115, 232, 0.15), rgba(77, 171, 255, 0.15));
+            border-color: var(--glow-blue);
+            box-shadow: 0 6px 25px rgba(26, 115, 232, 0.3);
+        }
+
+        .notification-toggle.active {
+            background: linear-gradient(135deg, rgba(26, 115, 232, 0.2), rgba(77, 171, 255, 0.2));
+            border-color: var(--glow-blue);
+            box-shadow: 0 8px 30px rgba(26, 115, 232, 0.4);
+            transform: scale(1.02);
+        }
+
+        .notification-toggle i {
+            font-size: 18px;
+            color: var(--glow-blue);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .notification-toggle:hover i {
+            color: #fff;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #ff453a, #ff6b35);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 20px;
+            padding: 2px;
+            box-shadow: 0 2px 8px rgba(255, 69, 58, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 55px;
+            left: 0;
+            width: 320px;
+            max-width: 90vw;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 400px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .notification-count {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(26, 115, 232, 0.1);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 250px;
+        }
+
+        .notification-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: rgba(26, 115, 232, 0.05);
+        }
+
+        .notification-item.unread {
+            background: rgba(26, 115, 232, 0.03);
+            border-left: 3px solid var(--glow-blue);
+        }
+
+        .notification-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .notification-item-message {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .notification-item-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .empty-notifications {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-notifications i {
+            font-size: 32px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .empty-notifications p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .notification-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .view-all-btn {
+            color: var(--glow-blue);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .user-menu-toggle {
+            width: 45px;
+            height: 45px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-menu-toggle:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(26, 115, 232, 0.15), rgba(77, 171, 255, 0.15));
+            border-color: var(--glow-blue);
+            box-shadow: 0 6px 25px rgba(26, 115, 232, 0.3);
+        }
+
+        .user-menu-toggle.active {
+            background: linear-gradient(135deg, rgba(26, 115, 232, 0.2), rgba(77, 171, 255, 0.2));
+            border-color: var(--glow-blue);
+            box-shadow: 0 8px 30px rgba(26, 115, 232, 0.4);
+            transform: scale(1.02);
+        }
+
+        .user-menu-toggle i {
+            font-size: 18px;
+            color: var(--glow-blue);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-menu-toggle:hover i {
+            color: #fff;
+        }
+
+        .user-menu-toggle.active i.fa-bars {
+            opacity: 0;
+            transform: rotate(90deg) scale(0.8);
+        }
+
+        .user-menu-toggle.active i.fa-times {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
+        }
+
+        .user-menu-toggle i.fa-times {
+            position: absolute;
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-menu-toggle i.fa-bars {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-menu-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            min-width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .user-menu-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .user-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .user-menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(77, 171, 255, 0.1), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .user-menu-item:hover::before {
+            left: 100%;
+        }
+
+        .user-menu-item:hover {
+            background: rgba(26, 115, 232, 0.1);
+            color: var(--glow-blue);
+        }
+
+        .user-menu-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .user-menu-item span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 8px 15px;
+        }
+
+        .background-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(77, 171, 255, 0.1);
+            border-radius: 50%;
+            animation: floatingAnimation 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; top: 60%; left: 90%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 10px; height: 10px; top: 80%; left: 20%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 4px; height: 4px; top: 30%; left: 80%; animation-delay: 6s; }
+
+        /* Glassmorphism Footer */
+        .glass-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: rgba(15, 15, 25, 0.7);
+            border-top: 1px solid rgba(77, 171, 255, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .glass-footer:hover {
+            background: rgba(26, 115, 232, 0.2);
+            border-top: 1px solid rgba(77, 171, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .glass-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.2), 
+                transparent);
+            transition: left 0.5s ease;
+        }
+
+        .glass-footer:hover::before {
+            left: 100%;
+        }
+
+        .footer-content {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 5px rgba(77, 171, 255, 0.3);
+        }
+
+        .footer-content span {
+            color: var(--glow-blue);
+            font-weight: 600;
+        }
+
+        .logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .welcome-section {
+            margin-bottom: 25px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .welcome-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue), #00d4ff);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease infinite;
+            margin-bottom: 8px;
+            text-shadow: 0 0 30px rgba(77, 171, 255, 0.5);
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 420px;
+            flex: 1;
+            max-height: 60vh;
+            margin-bottom: 60px; /* Add space for footer */
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            backdrop-filter: blur(20px);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeInUp 0.8s ease-out calc(var(--delay, 0) * 0.1s) both;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(77, 171, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(26, 115, 232, 0.4);
+            border-color: var(--glow-blue);
+            background: rgba(26, 115, 232, 0.1);
+        }
+
+        .feature-card:nth-child(1) { --delay: 4; }
+        .feature-card:nth-child(2) { --delay: 5; }
+        .feature-card:nth-child(3) { --delay: 6; }
+        .feature-card:nth-child(4) { --delay: 7; }
+        .feature-card:nth-child(5) { --delay: 8; }
+        .feature-card:nth-child(6) { --delay: 9; }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 22px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 35px rgba(26, 115, 232, 0.7);
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            font-weight: 400;
+        }
+
+        .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, var(--success-color), #34d399);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .badge-coming-soon {
+            background: linear-gradient(135deg, var(--warning-color), #fbbf24);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .info-icon {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 24px;
+            height: 24px;
+            background: rgba(77, 171, 255, 0.2);
+            border: 1px solid rgba(77, 171, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-icon:hover {
+            background: rgba(77, 171, 255, 0.4);
+            border-color: var(--glow-blue);
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(77, 171, 255, 0.3);
+        }
+
+        .info-icon i {
+            font-size: 12px;
+            color: var(--glow-blue);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            animation: modalSlideIn 0.3s ease-out;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(26, 115, 232, 0.4);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .modal-features {
+            margin-bottom: 20px;
+        }
+
+        .modal-features h4 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .modal-features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .modal-features li {
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .modal-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .modal-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-available {
+            background: linear-gradient(135deg, var(--success-color), #34d399);
+            color: white;
+        }
+
+        .status-coming-soon {
+            background: linear-gradient(135deg, var(--warning-color), #fbbf24);
+            color: white;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: var(--text-secondary);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--text-primary);
+        }
+
+        /* Mobile responsive adjustments for modal */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 25px;
+                width: 95%;
+            }
+            
+            .modal-title {
+                font-size: 1.3rem;
+            }
+            
+            .info-icon {
+                width: 22px;
+                height: 22px;
+                top: 10px;
+                left: 10px;
+            }
+            
+            .info-icon i {
+                font-size: 11px;
+            }
+            
+            .logo {
+                max-width: 160px;
+                margin-bottom: 12px;
+            }
+            
+            .welcome-title {
+                font-size: 1.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .welcome-subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .features-grid {
+                max-width: 100%;
+                gap: 12px;
+                max-height: 55vh;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .feature-card {
+                padding: 12px;
+                border-radius: 16px;
+            }
+            
+            .feature-icon {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+            
+            .feature-title {
+                font-size: 0.95rem;
+                margin-bottom: 6px;
+            }
+            
+            .feature-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+            
+            .badge {
+                padding: 3px 8px;
+                font-size: 0.6rem;
+                top: 8px;
+                right: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                margin: 15% auto;
+                padding: 20px;
+            }
+            
+            .modal-header {
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+            }
+            
+            .modal-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+                margin-right: 12px;
+            }
+            
+            .modal-title {
+                font-size: 1.2rem;
+            }
+            
+            .info-icon {
+                width: 20px;
+                height: 20px;
+                top: 8px;
+                left: 8px;
+            }
+            
+            .info-icon i {
+                font-size: 10px;
+            }
+            
+            html, body {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .container {
+                padding: 10px 12px;
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            .logo {
+                max-width: 140px;
+                margin-bottom: 10px;
+            }
+            
+            .welcome-section {
+                margin-bottom: 15px;
+            }
+            
+            .welcome-title {
+                font-size: 1.6rem;
+                margin-bottom: 4px;
+            }
+            
+            .welcome-subtitle {
+                font-size: 0.85rem;
+            }
+            
+            .features-grid {
+                gap: 10px;
+                max-height: 50vh;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            
+            .feature-card {
+                padding: 10px;
+                border-radius: 14px;
+            }
+            
+            .feature-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .feature-title {
+                font-size: 0.9rem;
+                margin-bottom: 4px;
+            }
+            
+            .feature-description {
+                font-size: 0.7rem;
+                line-height: 1.2;
+            }
+            
+            .badge {
+                padding: 2px 6px;
+                font-size: 0.55rem;
+                top: 6px;
+                right: 6px;
+            }
+            
+            .top-menu-container {
+                top: 15px;
+                left: 15px;
+                right: 15px;
+            }
+            
+            .notification-toggle,
+            .user-menu-toggle {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .notification-toggle i,
+            .user-menu-toggle i {
+                font-size: 16px;
+            }
+            
+            .notification-dropdown {
+                width: 280px;
+                top: 50px;
+                left: 0;
+            }
+            
+            .user-menu-dropdown {
+                min-width: 200px;
+                top: 50px;
+                right: 0;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .logo {
+                max-width: 120px;
+            }
+            
+            .welcome-title {
+                font-size: 1.4rem;
+            }
+            
+            .welcome-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .features-grid {
+                gap: 8px;
+            }
+            
+            .feature-card {
+                padding: 8px;
+            }
+            
+            .feature-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            
+            .feature-title {
+                font-size: 0.85rem;
+            }
+            
+            .feature-description {
+                font-size: 0.65rem;
+            }
+            
+            .top-menu-container {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .notification-toggle,
+            .user-menu-toggle {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .notification-toggle i,
+            .user-menu-toggle i {
+                font-size: 14px;
+            }
+            
+            .notification-dropdown {
+                width: 250px;
+                top: 45px;
+                left: -5px;
+            }
+            
+            .user-menu-dropdown {
+                min-width: 180px;
+                top: 45px;
+                right: 0;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .container {
+                flex-direction: row;
+                align-items: center;
+                gap: 20px;
+            }
+            
+            .welcome-section {
+                flex: 0 0 auto;
+                text-align: left;
+                margin-bottom: 0;
+            }
+            
+            .features-grid {
+                flex: 1;
+                max-height: 80vh;
+            }
+            
+            .logo {
+                max-width: 100px;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+</head>
+<body data-uid="{{ session.uid if session.uid else 'guest' }}">
+    <!-- Pass server data to JavaScript -->
+    <script type="application/json" id="enabledFeatures">{{ enabled_features | tojson }}</script>
+    <div class="background-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <!-- User Menu -->
+    <div class="top-menu-container">
+        <!-- Notification Icon -->
+        <div class="notification-menu">
+            <div class="notification-toggle" onclick="toggleNotifications()" id="notificationToggle">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            </div>
+            <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-header">
+                    <h3>Notifications</h3>
+                    <span class="notification-count" id="notificationCount">0 new</span>
+                </div>
+                <div class="notification-list" id="notificationList">
+                    <div class="empty-notifications">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No new notifications</p>
+                    </div>
+                </div>
+                <div class="notification-footer">
+                    <a href="{{ url_for('user_notifications') }}" class="view-all-btn">View All Notifications</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="user-menu-toggle" onclick="toggleUserMenu()">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-times"></i>
+            </div>
+        <div class="user-menu-dropdown" id="userMenuDropdown">
+            <a href="{{ url_for('profile') }}" class="user-menu-item">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </a>
+            <a href="{{ url_for('user_notifications') }}" class="user-menu-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="{{ url_for('userguide') }}" class="user-menu-item">
+                <i class="fas fa-book"></i>
+                <span>Guide</span>
+            </a>
+            <a href="{{ url_for('home') }}" class="user-menu-item">
+                <i class="fas fa-info-circle"></i>
+                <span>About</span>
+            </a>
+            <div class="menu-divider"></div>
+            <a href="{{ url_for('ideas') }}" class="user-menu-item">
+                <i class="fas fa-comment"></i>
+                <span>Send Feedback</span>
+            </a>
+            <a href="{{ url_for('ideas') }}" class="user-menu-item">
+                <i class="fas fa-bug"></i>
+                <span>Report Error</span>
+            </a>
+            <div class="menu-divider"></div>
+            <a href="{{ url_for('logout') }}" class="user-menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-section">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="BRYN Logo" class="logo">
+            <h1 class="welcome-title">Welcome to BRYN</h1>
+            <p class="welcome-subtitle">Your AI-powered learning companion</p>
+        </div>
+        
+        <div class="features-grid" id="featuresGrid">
+            <!-- Feature boxes will be dynamically rendered here -->
+        </div>
+    </div>
+
+    <!-- Feature Info Modal -->
+    <div id="featureModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon">
+                    <i id="modalIconClass"></i>
+                </div>
+                <h2 class="modal-title" id="modalTitle"></h2>
+            </div>
+            <div class="modal-status" id="modalStatus"></div>
+            <div class="modal-description" id="modalDescription"></div>
+            <div class="modal-features" id="modalFeatures"></div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration and initialization
+        let firebaseConfig = null;
+        let database = null;
+        
+        // Get initial features from server
+        let currentFeatures = {};
+        try {
+            const enabledFeaturesElement = document.getElementById('enabledFeatures');
+            currentFeatures = JSON.parse(enabledFeaturesElement.textContent);
+        } catch (e) {
+            console.error('Failed to parse initial features:', e);
+            currentFeatures = {
+                'ai_chat': true,
+                'tuition': false,
+                'papers': false,
+                'ai_image': false,
+                'study_planner': true
+            };
+        }
+        
+        // Initialize Firebase
+        async function initializeFirebase() {
+            try {
+                console.log('Initializing Firebase...');
+                const response = await fetch('/api/firebase-config');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                firebaseConfig = await response.json();
+                console.log('Firebase config received:', firebaseConfig);
+                
+                // Check if required config is present
+                if (!firebaseConfig.apiKey || !firebaseConfig.databaseURL) {
+                    throw new Error('Incomplete Firebase configuration');
+                }
+                
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                console.log('Firebase initialized successfully');
+                
+                // Try to authenticate anonymously for database access
+                try {
+                    await firebase.auth().signInAnonymously();
+                    console.log('Anonymous authentication successful');
+                } catch (authError) {
+                    console.warn('Anonymous authentication failed, continuing without auth:', authError);
+                }
+                
+                // Set up real-time listener for feature changes
+                setupFeatureListener();
+            } catch (error) {
+                console.error('Failed to initialize Firebase:', error);
+                // Fallback to polling for updates
+                setupPollingFallback();
+            }
+        }
+        
+        // Set up real-time listener for admin feature changes
+        function setupFeatureListener() {
+            console.log('Setting up Firebase feature listener...');
+            const featuresRef = database.ref('admin_settings/features');
+            
+            featuresRef.on('value', (snapshot) => {
+                console.log('Feature data changed:', snapshot.val());
+                const features = snapshot.val() || {};
+                const enabledFeatures = {};
+                
+                // Process the features data to match the expected format
+                const defaultEnabled = {
+                    'ai_chat': true,
+                    'tuition': false,
+                    'papers': false,
+                    'ai_image': false,
+                    'study_planner': true
+                };
+                
+                for (const [featureKey, defaultStatus] of Object.entries(defaultEnabled)) {
+                    if (features[featureKey]) {
+                        enabledFeatures[featureKey] = features[featureKey].enabled || false;
+                    } else {
+                        enabledFeatures[featureKey] = defaultStatus;
+                    }
+                }
+                
+                console.log('Processed enabled features:', enabledFeatures);
+                console.log('Current features:', currentFeatures);
+                
+                // Only re-render if features have changed
+                if (JSON.stringify(enabledFeatures) !== JSON.stringify(currentFeatures)) {
+                    console.log('Features changed, re-rendering...');
+                    currentFeatures = enabledFeatures;
+                    renderFeatures(enabledFeatures);
+                    
+                    // Show a subtle notification about feature updates
+                    showFeatureUpdateNotification();
+                } else {
+                    console.log('No feature changes detected');
+                }
+            }, (error) => {
+                console.error('Firebase listener error:', error);
+            });
+            
+            console.log('Firebase listener set up successfully');
+        }
+        
+        // Fallback polling mechanism if Firebase fails
+        function setupPollingFallback() {
+            console.log('Setting up polling fallback for feature updates...');
+            
+            async function pollForUpdates() {
+                try {
+                    const response = await fetch('/api/enabled-features');
+                    if (response.ok) {
+                        const enabledFeatures = await response.json();
+                        
+                        if (JSON.stringify(enabledFeatures) !== JSON.stringify(currentFeatures)) {
+                            console.log('Polling detected feature changes:', enabledFeatures);
+                            currentFeatures = enabledFeatures;
+                            renderFeatures(enabledFeatures);
+                            showFeatureUpdateNotification();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }
+            
+            // Poll every 5 seconds
+            setInterval(pollForUpdates, 5000);
+            console.log('Polling fallback set up successfully');
+        }
+        
+        // Render feature boxes dynamically
+        function renderFeatures(enabledFeatures) {
+            console.log('Rendering features:', enabledFeatures);
+            const featuresGrid = document.getElementById('featuresGrid');
+            
+            if (!featuresGrid) {
+                console.error('Features grid element not found!');
+                return;
+            }
+            
+            featuresGrid.innerHTML = '';
+            
+            const featureDefinitions = {
+                'ai_chat': {
+                    title: 'AI Chat',
+                    icon: 'fas fa-comments',
+                    description: 'Get instant answers to your academic questions',
+                    badge: 'NEW',
+                    badgeClass: 'badge-new',
+                    url: '/chat',
+                    infoId: 'ai-chat',
+                    isAvailable: true
+                },
+                'tuition': {
+                    title: 'Tuition',
+                    icon: 'fas fa-chalkboard-teacher',
+                    description: 'Connect with expert tutors',
+                    badge: 'NEW',
+                    badgeClass: 'badge-new',
+                    url: '/my-tuition-requests',
+                    infoId: 'tuition',
+                    isAvailable: true
+                },
+                'papers': {
+                    title: 'Papers',
+                    icon: 'fas fa-file-alt',
+                    description: 'Access past papers and practice tests',
+                    badge: 'NEW',
+                    badgeClass: 'badge-new',
+                    url: '/papers',
+                    infoId: 'papers',
+                    isAvailable: true
+                },
+                'ai_image': {
+                    title: 'AI Image',
+                    icon: 'fas fa-image',
+                    description: 'Generate and analyze images',
+                    badge: 'Coming Soon',
+                    badgeClass: 'badge-coming-soon',
+                    onclick: "showComingSoon('AI Image')",
+                    infoId: 'ai-image',
+                    isAvailable: false
+                },
+                'study_planner': {
+                    title: 'Study Planner',
+                    icon: 'fas fa-calendar-alt',
+                    description: 'Organize your study schedule',
+                    badge: 'NEW',
+                    badgeClass: 'badge-new',
+                    url: '/study-planner',
+                    infoId: 'study-planner',
+                    isAvailable: true
+                }
+            };
+            
+            // Sort features: available features first, then upcoming features
+            const enabledFeaturesList = [];
+            const availableFeatures = [];
+            const upcomingFeatures = [];
+            
+            // Separate enabled features into available and upcoming
+            for (const [featureKey, enabled] of Object.entries(enabledFeatures)) {
+                if (enabled && featureDefinitions[featureKey]) {
+                    const feature = { key: featureKey, ...featureDefinitions[featureKey] };
+                    if (feature.isAvailable) {
+                        availableFeatures.push(feature);
+                    } else {
+                        upcomingFeatures.push(feature);
+                    }
+                }
+            }
+            
+            // Combine: available features first, then upcoming features
+            const sortedFeatures = [...availableFeatures, ...upcomingFeatures];
+            
+            let delay = 4;
+            let renderCount = 0;
+            
+            // Render sorted features
+            for (const feature of sortedFeatures) {
+                const featureCard = createFeatureCard(feature, delay);
+                featuresGrid.appendChild(featureCard);
+                delay++;
+                renderCount++;
+                console.log(`Rendered feature: ${feature.key} (${feature.isAvailable ? 'Available' : 'Coming Soon'})`);
+            }
+            
+            console.log(`Total features rendered: ${renderCount} (${availableFeatures.length} available, ${upcomingFeatures.length} upcoming)`);
+        }
+        
+        // Create feature card element
+        function createFeatureCard(feature, delay) {
+            const isClickable = feature.url !== undefined;
+            const element = document.createElement(isClickable ? 'a' : 'div');
+            
+            element.className = 'feature-card';
+            element.style.setProperty('--delay', delay);
+            
+            if (isClickable) {
+                element.href = feature.url;
+            } else if (feature.onclick) {
+                element.setAttribute('onclick', feature.onclick);
+            }
+            
+            element.innerHTML = `
+                <div class="info-icon" onclick="event.preventDefault(); event.stopPropagation(); showFeatureInfo('${feature.infoId}')">
+                    <i class="fas fa-info"></i>
+                </div>
+                <span class="badge ${feature.badgeClass}">${feature.badge}</span>
+                <div class="feature-icon">
+                    <i class="${feature.icon}"></i>
+                </div>
+                <h3 class="feature-title">${feature.title}</h3>
+                <p class="feature-description">${feature.description}</p>
+            `;
+            
+            return element;
+        }
+        
+        // Show subtle notification about feature updates
+        function showFeatureUpdateNotification() {
+            // Create a temporary notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, var(--primary-blue), var(--glow-blue));
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                z-index: 1000;
+                opacity: 0;
+                transform: translateX(400px);
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+            `;
+            notification.textContent = 'Features updated';
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 2500);
+        }
+        // Feature information data
+        const featureInfo = {
+            'ai-chat': {
+                title: 'AI Chat',
+                icon: 'fas fa-comments',
+                status: 'available',
+                description: 'Our AI Chat feature provides instant, intelligent responses to your academic questions. Powered by advanced language models, it can help you understand complex concepts, solve problems, and provide explanations across various subjects.',
+                features: [
+                    'Real-time chat interface with AI assistant',
+                    'Support for text and image-based questions',
+                    'Multi-subject academic assistance',
+                    'Detailed explanations and step-by-step solutions',
+                    'Chat history and conversation management',
+                    'Mobile-optimized responsive design'
+                ]
+            },
+            'tuition': {
+                title: 'Tuition',
+                icon: 'fas fa-chalkboard-teacher',
+                status: 'available',
+                description: 'Connect with expert tutors for personalized learning experiences. Our tuition feature allows you to request one-on-one sessions, group discussions, and specialized academic support tailored to your needs.',
+                features: [
+                    'Request personalized tutoring sessions',
+                    'Multiple service types: Live classes, chat support, paper discussions',
+                    'Direct communication with qualified tutors',
+                    'Track your tuition requests and status',
+                    'Flexible scheduling and session management',
+                    'WhatsApp integration for easy contact'
+                ]
+            },
+            'papers': {
+                title: 'Papers',
+                icon: 'fas fa-file-alt',
+                status: 'available',
+                description: 'Access a comprehensive collection of past papers, practice tests, and examination materials. This feature helps you prepare effectively for exams with authentic question papers from various academic institutions.',
+                features: [
+                    'Extensive database of past examination papers',
+                    'Subject-wise categorization and filtering',
+                    'Practice tests with automated scoring',
+                    'Solution guides and marking schemes',
+                    'Progress tracking and performance analytics',
+                    'Downloadable PDF formats for offline study'
+                ]
+            },
+            'ai-image': {
+                title: 'AI Image',
+                icon: 'fas fa-image',
+                status: 'coming-soon',
+                description: 'Generate educational diagrams, analyze visual content, and create custom illustrations for your studies. This AI-powered feature will help you visualize complex concepts and create engaging study materials.',
+                features: [
+                    'AI-powered image generation for educational content',
+                    'Visual analysis and explanation of diagrams',
+                    'Custom illustration creation for presentations',
+                    'Chart and graph generation from data',
+                    'Image-to-text conversion and analysis',
+                    'Integration with other study tools'
+                ]
+            },
+            'study-planner': {
+                title: 'Study Planner',
+                icon: 'fas fa-calendar-alt',
+                status: 'available',
+                description: 'Organize your academic life with our intelligent study planner. Create schedules, set goals, track progress, and receive personalized recommendations to optimize your learning journey.',
+                features: [
+                    'Personalized study schedule creation',
+                    'Goal setting and progress tracking',
+                    'Calendar integration and reminders',
+                    'Subject-wise time allocation',
+                    'Performance analytics and insights',
+                    'Adaptive planning based on your progress'
+                ]
+            }
+        };
+
+        function showFeatureInfo(featureId) {
+            const feature = featureInfo[featureId];
+            if (!feature) return;
+
+            // Update modal content
+            document.getElementById('modalTitle').textContent = feature.title;
+            document.getElementById('modalIconClass').className = feature.icon;
+            document.getElementById('modalDescription').textContent = feature.description;
+            
+            // Update status
+            const statusElement = document.getElementById('modalStatus');
+            if (feature.status === 'available') {
+                statusElement.textContent = 'Available Now';
+                statusElement.className = 'modal-status status-available';
+            } else {
+                statusElement.textContent = 'Coming Soon';
+                statusElement.className = 'modal-status status-coming-soon';
+            }
+            
+            // Update features list
+            const featuresElement = document.getElementById('modalFeatures');
+            let featuresHTML = '<h4>Key Features:</h4><ul>';
+            feature.features.forEach(item => {
+                featuresHTML += `<li>${item}</li>`;
+            });
+            featuresHTML += '</ul>';
+            featuresElement.innerHTML = featuresHTML;
+            
+            // Show modal
+            document.getElementById('featureModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('featureModal').style.display = 'none';
+        }
+
+        // User menu functionality
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userMenuDropdown');
+            const toggleButton = document.querySelector('.user-menu-toggle');
+            
+            dropdown.classList.toggle('active');
+            toggleButton.classList.toggle('active');
+            
+            // Close notification dropdown if open
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationToggle = document.getElementById('notificationToggle');
+            notificationDropdown.classList.remove('active');
+            notificationToggle.classList.remove('active');
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(event) {
+            const topMenuContainer = document.querySelector('.top-menu-container');
+            const userDropdown = document.getElementById('userMenuDropdown');
+            const userToggle = document.querySelector('.user-menu-toggle');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const notificationToggle = document.getElementById('notificationToggle');
+            
+            if (!topMenuContainer.contains(event.target)) {
+                userDropdown.classList.remove('active');
+                userToggle.classList.remove('active');
+                notificationDropdown.classList.remove('active');
+                notificationToggle.classList.remove('active');
+            }
+        });
+
+        // Close menus when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const userDropdown = document.getElementById('userMenuDropdown');
+                const userToggle = document.querySelector('.user-menu-toggle');
+                const notificationDropdown = document.getElementById('notificationDropdown');
+                const notificationToggle = document.getElementById('notificationToggle');
+                
+                userDropdown.classList.remove('active');
+                userToggle.classList.remove('active');
+                notificationDropdown.classList.remove('active');
+                notificationToggle.classList.remove('active');
+            }
+        });
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('featureModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        function showComingSoon(featureName) {
+            alert(`${featureName} feature is coming soon! Stay tuned for updates.`);
+        }
+        
+        // Notification System
+        let notificationCount = 0;
+        let notifications = [];
+        let notificationListener = null;
+        
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            const toggle = document.getElementById('notificationToggle');
+            
+            dropdown.classList.toggle('active');
+            toggle.classList.toggle('active');
+            
+            // Close user menu if open
+            const userDropdown = document.getElementById('userMenuDropdown');
+            const userToggle = document.querySelector('.user-menu-toggle');
+            userDropdown.classList.remove('active');
+            userToggle.classList.remove('active');
+        }
+        
+        function updateNotificationUI() {
+            const badge = document.getElementById('notificationBadge');
+            const count = document.getElementById('notificationCount');
+            const list = document.getElementById('notificationList');
+            
+            const unreadCount = notifications.filter(n => !n.read).length;
+            
+            if (unreadCount > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                count.textContent = `${unreadCount} new`;
+            } else {
+                badge.style.display = 'none';
+                count.textContent = '0 new';
+            }
+            
+            // Update notification list
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-notifications">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>No new notifications</p>
+                    </div>
+                `;
+            } else {
+                const recentNotifications = notifications.slice(0, 5);
+                list.innerHTML = recentNotifications.map(notification => `
+                    <div class="notification-item ${!notification.read ? 'unread' : ''}" 
+                         onclick="markNotificationAsRead('${notification.id}')">
+                        <div class="notification-item-title">${notification.title}</div>
+                        <div class="notification-item-message">${notification.message}</div>
+                        <div class="notification-item-time">${formatNotificationTime(notification.created_at)}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function formatNotificationTime(timestamp) {
+            const now = new Date();
+            const notificationTime = new Date(timestamp);
+            const diffInMinutes = Math.floor((now - notificationTime) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+            return `${Math.floor(diffInMinutes / 1440)}d ago`;
+        }
+        
+        function markNotificationAsRead(notificationId) {
+            fetch(`/notifications/mark_as_read/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update local notification state
+                    const notification = notifications.find(n => n.id === notificationId);
+                    if (notification) {
+                        notification.read = true;
+                        updateNotificationUI();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+        
+        function initializeNotificationSystem() {
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Initialize notifications using existing Firebase setup
+            try {
+                if (database) {
+                    setupNotificationListener();
+                } else {
+                    // Wait for Firebase to initialize
+                    const checkFirebase = setInterval(() => {
+                        if (database) {
+                            clearInterval(checkFirebase);
+                            setupNotificationListener();
+                        }
+                    }, 1000);
+                    
+                    // Fallback to polling after 10 seconds
+                    setTimeout(() => {
+                        clearInterval(checkFirebase);
+                        if (!database) {
+                            console.log('Firebase not available, using polling for notifications');
+                            pollForNotifications();
+                        }
+                    }, 10000);
+                }
+            } catch (error) {
+                console.error('Notification system initialization error:', error);
+                pollForNotifications();
+            }
+            
+            // Initial load of notifications
+            loadInitialNotifications();
+        }
+        
+        function setupNotificationListener() {
+            const uid = document.body.dataset.uid || 'guest';
+            
+            if (uid !== 'guest') {
+                const userNotificationsRef = database.ref(`user_notifications/${uid}`);
+                
+                // Listen for new notifications
+                userNotificationsRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const newNotifications = [];
+                        let processedCount = 0;
+                        const totalNotifications = Object.keys(data).length;
+                        
+                        Object.keys(data).forEach(notificationId => {
+                            const notificationStatus = data[notificationId];
+                            
+                            // Get notification details from notifications table
+                            database.ref(`notifications/${notificationId}`).once('value', (notifSnapshot) => {
+                                const notification = notifSnapshot.val();
+                                if (notification) {
+                                    newNotifications.push({
+                                        id: notificationId,
+                                        title: notification.title,
+                                        message: notification.message,
+                                        created_at: notification.created_at,
+                                        read: notificationStatus.read || false
+                                    });
+                                }
+                                
+                                processedCount++;
+                                
+                                // When all notifications are processed
+                                if (processedCount === totalNotifications) {
+                                    // Sort by timestamp (newest first)
+                                    newNotifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                                    
+                                    // Check for new unread notifications
+                                    const oldUnreadCount = notifications.filter(n => !n.read).length;
+                                    notifications = newNotifications;
+                                    const newUnreadCount = notifications.filter(n => !n.read).length;
+                                    
+                                    updateNotificationUI();
+                                    
+                                    // Show browser notification for new notifications
+                                    if (newUnreadCount > oldUnreadCount && notifications.length > 0) {
+                                        const latestNotification = notifications.find(n => !n.read);
+                                        if (latestNotification) {
+                                            showBrowserNotification(latestNotification);
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    } else {
+                        notifications = [];
+                        updateNotificationUI();
+                    }
+                });
+            }
+        }
+        
+        function loadInitialNotifications() {
+            fetch('/api/notifications')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.notifications) {
+                        notifications = data.notifications;
+                        updateNotificationUI();
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load initial notifications:', error);
+                });
+        }
+        
+        function pollForNotifications() {
+            // Fallback polling mechanism
+            setInterval(() => {
+                fetch('/api/notifications')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.notifications) {
+                            const oldUnreadCount = notifications.filter(n => !n.read).length;
+                            notifications = data.notifications;
+                            const newUnreadCount = notifications.filter(n => !n.read).length;
+                            
+                            updateNotificationUI();
+                            
+                            if (newUnreadCount > oldUnreadCount && notifications.length > 0) {
+                                const latestNotification = notifications.find(n => !n.read);
+                                if (latestNotification) {
+                                    showBrowserNotification(latestNotification);
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Polling notification error:', error);
+                    });
+            }, 5000); // Poll every 5 seconds
+        }
+        
+        function showBrowserNotification(notification) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const browserNotification = new Notification(notification.title, {
+                    body: notification.message,
+                    icon: '/static/images/logo.jpg',
+                    badge: '/static/images/logo.jpg',
+                    tag: notification.id,
+                    renotify: false,
+                    requireInteraction: false,
+                    silent: false
+                });
+                
+                browserNotification.onclick = function() {
+                    window.focus();
+                    markNotificationAsRead(notification.id);
+                    browserNotification.close();
+                };
+                
+                // Auto close after 5 seconds
+                setTimeout(() => {
+                    browserNotification.close();
+                }, 5000);
+            }
+        }
+        
+        // Test function to manually trigger feature updates
+        window.testFeatureUpdate = function(featureKey, enabled) {
+            console.log(`Testing feature update: ${featureKey} = ${enabled}`);
+            const newFeatures = { ...currentFeatures };
+            newFeatures[featureKey] = enabled;
+            
+            console.log('Old features:', currentFeatures);
+            console.log('New features:', newFeatures);
+            
+            if (JSON.stringify(newFeatures) !== JSON.stringify(currentFeatures)) {
+                currentFeatures = newFeatures;
+                renderFeatures(newFeatures);
+                showFeatureUpdateNotification();
+                console.log('Manual feature update completed');
+            } else {
+                console.log('No changes detected');
+            }
+        }
+        
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            console.log('Initial features from server:', currentFeatures);
+            
+            // Render initial features
+            renderFeatures(currentFeatures);
+            
+            // Initialize notification system
+            initializeNotificationSystem();
+            
+            // Initialize Firebase for real-time updates
+            console.log('Starting Firebase initialization...');
+            initializeFirebase();
+        });
+    </script>
+    
+    <!-- Glassmorphism Footer -->
+    <div class="glass-footer" onclick="window.open('https://cosmosri.com', '_blank')">
+        <div class="footer-content">Powered by <span>CosmoSL</span></div>
+    </div>
+</body>
+</html>

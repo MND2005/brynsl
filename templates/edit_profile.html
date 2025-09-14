@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #000000;
+            --primary-gray: #1c1c1e;
+            --accent-blue: #ffffff36;
+            --text-light: #ffffff;
+            --text-gray: #8e8e93;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --glass-bg: rgba(28, 28, 30, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success-bg: rgba(52, 199, 89, 0.3);
+            --error-bg: rgba(255, 69, 58, 0.3);
+            --button-gradient: linear-gradient(135deg, #007AFF, #005EC2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            min-height: 100vh;
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            padding: 0;
+            margin-bottom: 80px;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: linear-gradient(
+                135deg,
+                rgba(10, 132, 255, 0.1) 0%,
+                transparent 50%
+            );
+        }
+
+        .edit-header {
+            padding: 2rem 1.5rem 1rem;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            color: var(--text-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            color: var(--accent-blue);
+        }
+
+        .edit-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .edit-subtitle {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .edit-form-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            margin: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            margin-bottom: 5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-gray);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-select option {
+            background: var(--primary-dark);
+            color: var(--text-light);
+        }
+
+        .readonly-field {
+            background: rgba(28, 28, 30, 0.3);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-gray);
+            cursor: not-allowed;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(5px);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--button-gradient);
+            color: var(--text-light);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            background: rgba(28, 28, 30, 0.7);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            opacity: 0.7;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .alert.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .alert-success {
+            background: var(--success-bg);
+            color: #34C759;
+        }
+
+        .alert-error {
+            background: var(--error-bg);
+            color: #FF453A;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            right: 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-btn.active,
+        .nav-btn:hover {
+            color: var(--accent-blue);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 480px) {
+            .edit-header {
+                padding: 1.5rem 1rem 1rem;
+            }
+
+            .back-button {
+                top: 1.5rem;
+                left: 1rem;
+                padding: 0.5rem;
+            }
+
+            .edit-title {
+                font-size: 1.5rem;
+            }
+
+            .edit-form-card {
+                margin: 0.5rem;
+                padding: 1rem;
+            }
+
+            .form-buttons {
+                flex-direction: column;
+            }
+
+            .bottom-nav {
+                left: 0.5rem;
+                right: 0.5rem;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="edit-header">
+        <a href="{{ url_for('profile') }}" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Profile
+        </a>
+        <h1 class="edit-title">Edit Profile</h1>
+        <p class="edit-subtitle">Update your personal information</p>
+    </div>
+
+    <div class="edit-form-card">
+        <div id="alertContainer"></div>
+        
+        <form id="editProfileForm">
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i> Email Address
+                </label>
+                <input type="email" id="email" name="email" class="form-input readonly-field" 
+                       value="{{ email }}" readonly>
+                <small style="color: var(--text-gray); font-size: 0.8rem; margin-top: 0.3rem; display: block;">
+                    Email cannot be changed for security reasons
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="name">
+                    <i class="fas fa-user"></i> Full Name *
+                </label>
+                <input type="text" id="name" name="name" class="form-input" 
+                       value="{{ name or '' }}" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="birthday">
+                    <i class="fas fa-calendar-day"></i> Birthday
+                </label>
+                <input type="date" id="birthday" name="birthday" class="form-input" 
+                       value="{{ birthday or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">
+                    <i class="fas fa-phone"></i> Phone Number
+                </label>
+                <input type="tel" id="phone" name="phone" class="form-input" 
+                       value="{{ phone or '' }}" placeholder="Enter your phone number">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="education_level">
+                    <i class="fas fa-graduation-cap"></i> Education Level
+                </label>
+                <select id="education_level" name="education_level" class="form-select">
+                    <option value="">Select your education level</option>
+                    <option value="Grade 1-5" {{ 'selected' if education_level == 'Grade 1-5' else '' }}>Grade 1-5</option>
+                    <option value="Grade 6-9" {{ 'selected' if education_level == 'Grade 6-9' else '' }}>Grade 6-9</option>
+                    <option value="O/L" {{ 'selected' if education_level == 'O/L' else '' }}>O/L</option>
+                    <option value="A/L" {{ 'selected' if education_level == 'A/L' else '' }}>A/L</option>
+                    <option value="University" {{ 'selected' if education_level == 'University' else '' }}>University</option>
+                    <option value="Other" {{ 'selected' if education_level == 'Other' else '' }}>Other</option>
+                </select>
+            </div>
+
+            <div class="form-buttons">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('profile') }}'">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" id="saveButton">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('main_dashboard') }}'">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-btn active" onclick="window.location.href='{{ url_for('profile') }}'">
+            <i class="fas fa-user"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('user_notifications') }}'">
+            <i class="fas fa-bell"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('ideas') }}'">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+        <button class="nav-btn" onclick="window.location.href='{{ url_for('logout') }}'">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+
+    <script>
+        // Form handling and validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editProfileForm');
+            const saveButton = document.getElementById('saveButton');
+            const alertContainer = document.getElementById('alertContainer');
+
+            form.addEventListener('submit', handleFormSubmit);
+
+            async function handleFormSubmit(e) {
+                e.preventDefault();
+                
+                // Show loading state
+                saveButton.disabled = true;
+                saveButton.classList.add('loading');
+                saveButton.innerHTML = '<i class="fas fa-save"></i> Saving...';
+                
+                // Clear previous alerts
+                alertContainer.innerHTML = '';
+                
+                try {
+                    // Get form data
+                    const formData = new FormData(form);
+                    
+                    // Validate required fields
+                    const name = formData.get('name').trim();
+                    if (!name) {
+                        throw new Error('Name is required');
+                    }
+                    
+                    // Validate date format if provided
+                    const birthday = formData.get('birthday');
+                    if (birthday && !isValidDate(birthday)) {
+                        throw new Error('Invalid date format');
+                    }
+                    
+                    // Submit form
+                    const response = await fetch('/profile/edit', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showAlert('success', result.message || 'Profile updated successfully!');
+                        
+                        // Redirect to profile page after 2 seconds
+                        setTimeout(() => {
+                            window.location.href = '/profile';
+                        }, 2000);
+                    } else {
+                        throw new Error(result.error || 'Failed to update profile');
+                    }
+                    
+                } catch (error) {
+                    showAlert('error', error.message);
+                } finally {
+                    // Reset button state
+                    saveButton.disabled = false;
+                    saveButton.classList.remove('loading');
+                    saveButton.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+                }
+            }
+            
+            function showAlert(type, message) {
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${type}`;
+                
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                alert.innerHTML = `
+                    <i class="fas ${icon}"></i>
+                    <span>${message}</span>
+                `;
+                
+                alertContainer.appendChild(alert);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    alert.classList.add('show');
+                }, 100);
+                
+                // Auto-hide error alerts after 5 seconds
+                if (type === 'error') {
+                    setTimeout(() => {
+                        alert.style.opacity = '0';
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 300);
+                    }, 5000);
+                }
+            }
+            
+            function isValidDate(dateString) {
+                const regex = /^\d{4}-\d{2}-\d{2}$/;
+                if (!regex.test(dateString)) return false;
+                
+                const date = new Date(dateString);
+                return date instanceof Date && !isNaN(date);
+            }
+            
+            // Form field validation on blur
+            const nameField = document.getElementById('name');
+            nameField.addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.style.borderColor = '#FF453A';
+                } else {
+                    this.style.borderColor = '';
+                }
+            });
+            
+            const birthdayField = document.getElementById('birthday');
+            birthdayField.addEventListener('blur', function() {
+                if (this.value && !isValidDate(this.value)) {
+                    this.style.borderColor = '#FF453A';
+                    showAlert('error', 'Please enter a valid date');
+                } else {
+                    this.style.borderColor = '';
+                }
+            });
+            
+            // Phone number formatting (optional)
+            const phoneField = document.getElementById('phone');
+            phoneField.addEventListener('input', function() {
+                // Remove any non-digit characters except + and spaces
+                this.value = this.value.replace(/[^\d\+\s\-\(\)]/g, '');
+            });
+        });
+    </script>
+</body>
+</html>

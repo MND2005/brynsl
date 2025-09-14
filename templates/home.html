@@ -1113,6 +1113,154 @@
     }
         
 
+        /* Statistics Section */
+        .statistics {
+            background: var(--darker-bg);
+            padding: 100px 5%;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* FAQ Section */
+        .faq {
+            padding: 100px 5%;
+            background: var(--dark-bg);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+        }
+
+        .faq-question {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .faq-question:hover {
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .faq-question h3 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .faq-question i {
+            transition: var(--transition);
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 0 25px 25px;
+            max-height: 500px;
+        }
+
+        .faq-answer p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Newsletter Section */
+        .newsletter {
+            padding: 100px 5%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            text-align: center;
+        }
+
+        .newsletter-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .newsletter-title {
+            font-size: 2.5rem;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .newsletter-subtitle {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+
+        .newsletter-form .cta-button {
+            padding: 15px 30px;
+        }
+
         /* Download Section */
         .download {
             text-align: center;
@@ -1559,6 +1707,18 @@
                 width: 60px;
                 height: 60px;
             }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .newsletter-form input {
+                min-width: 100%;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -1573,6 +1733,9 @@
             <a href="#ceo-message" class="nav-link">CEO Message</a>
             <a href="#team" class="nav-link">Team</a>
             <a href="#testimonials" class="nav-link">Testimonials</a>
+            <a href="#faq" class="nav-link">FAQ</a>
+            <a href="{{ url_for('userguide') }}" class="nav-link">Guide</a>
+            <a href="{{ url_for('home') }}" class="nav-link">About</a>
             <a href="#download" class="nav-link cta-button">Download</a>
         </div>
         <div class="menu-toggle">
@@ -1585,7 +1748,10 @@
         <a href="#screenshots" class="mobile-nav-link">Screenshots</a>
         <a href="#ceo-message" class="mobile-nav-link">CEO Message</a>
         <a href="#team" class="mobile-nav-link">Team</a>
-        <a href="#testimonials" class="nav-link">Testimonials</a>
+        <a href="#testimonials" class="mobile-nav-link">Testimonials</a>
+        <a href="#faq" class="mobile-nav-link">FAQ</a>
+        <a href="{{ url_for('userguide') }}" class="mobile-nav-link">Guide</a>
+        <a href="{{ url_for('home') }}" class="mobile-nav-link">About</a>
         <a href="#download" class="mobile-nav-link cta-button">Download</a>
     </div>
 
@@ -1631,6 +1797,13 @@
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h3>Personalized Tuition</h3>
+                <p>Connect with expert tutors for one-on-one sessions tailored to your learning needs and academic goals.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
                     <i class="fas fa-image"></i>
                 </div>
                 <h3>Advanced Image Analysis</h3>
@@ -1649,6 +1822,13 @@
                 </div>
                 <h3>Fortress-Level Security</h3>
                 <p>Lock down your data with bank-grade encryption and military-strength privacy controls.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3>Study Planner</h3>
+                <p>Organize your academic life with our intelligent study planner that creates personalized schedules.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
@@ -1732,6 +1912,42 @@
         </div>
     </section>
 
+    <section id="tuition" class="features">
+        <div class="section-header">
+            <h2 class="section-title">Expert <span class="highlight">Tuition</span> Services</h2>
+            <p class="section-subtitle">Connect with qualified tutors for personalized learning experiences</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Qualified Tutors</h3>
+                <p>Work with experienced educators who specialize in your subject area and learning level.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>Live Sessions</h3>
+                <p>Engage in real-time discussions with tutors through our integrated chat and video systems.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+                <h3>WhatsApp Integration</h3>
+                <p>Continue conversations seamlessly through WhatsApp for convenient communication.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h3>Progress Tracking</h3>
+                <p>Monitor your learning journey with detailed progress reports and personalized feedback.</p>
+            </div>
+        </div>
+    </section>
 
     <section id="team" class="team">
         <div class="section-header">
@@ -1821,6 +2037,92 @@
     </div>
     </section>
 
+    <!-- Statistics Section -->
+    <section class="statistics">
+        <div class="section-header">
+            <h2 class="section-title">Our <span class="highlight">Impact</span> in Numbers</h2>
+            <p class="section-subtitle">Join our growing community of learners and educators</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">1K+</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100+</div>
+                <div class="stat-label">Expert Tutors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Satisfaction Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Support Available</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq">
+        <div class="section-header">
+            <h2 class="section-title">Frequently Asked <span class="highlight">Questions</span></h2>
+            <p class="section-subtitle">Find answers to common questions about BRYN</p>
+        </div>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>How do I get started with BRYN?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Simply download the app from Google Play Store, create an account, and you're ready to start your learning journey. Our intuitive onboarding process will guide you through the initial setup.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>How does the tuition matching work?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Our AI-powered matching system connects you with qualified tutors based on your subject requirements, learning level, and scheduling preferences. You can review tutor profiles and ratings before making a selection.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Is my data secure with BRYN?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Absolutely. We use bank-grade encryption and follow industry best practices to protect your personal information. Your data is never shared with third parties without your explicit consent.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">
+                    <h3>Can I cancel my subscription anytime?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, you can cancel your subscription at any time with no cancellation fees. You'll continue to have access to premium features until the end of your billing period.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="newsletter-container">
+            <div class="newsletter-content">
+                <h2 class="newsletter-title">Stay Updated</h2>
+                <p class="newsletter-subtitle">Subscribe to our newsletter for the latest updates and educational tips</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="cta-button primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <section id="download" class="download">
         <div class="download-content">
             <h2 class="download-title">Ready to Transform Your <span class="highlight">Experience</span>?</h2>
@@ -1844,6 +2146,8 @@
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
                 <a href="#">Contact Us</a>
+                <a href="{{ url_for('userguide') }}">User Guide</a>
+                <a href="{{ url_for('home') }}">About</a>
                 <a href="https://www.brynsl.com/userguide">Support</a>
             </div>
             <div class="social-links">
@@ -1854,7 +2158,7 @@
             </div>
         </div>
         <div class="copyright">
-            © 2025 CosmoSL Pvt Ltd. All rights reserved.
+            © 2025 Cosmo Solutions (Pvt) Ltd. All rights reserved.
         </div>
     </footer>
 
@@ -2073,6 +2377,26 @@
                     teamSection.style.background = `linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(0, 206, 201, 0.1))`;
                 });
             });
+
+            // FAQ Accordion functionality
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    item.classList.toggle('active');
+                });
+            });
+
+            // Newsletter form submission
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    alert(`Thank you for subscribing with ${email}! You\"ll receive our next newsletter.`);
+                    this.reset();
+                });
+            }
         });
     </script>
     <script>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0, minimum-scale=0.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="theme-color" content="#6e48aa">
     <title>BRYN</title>
     <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='favicon.jpg') }}">
@@ -11,11 +11,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <style>
+        /* Header Layout Styles */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+        
+        #back-btn:hover {
+            color: #4eff8f;
+            background: rgba(78, 255, 143, 0.1);
+            transform: scale(1.1);
+        }
+        
+        /* Pay Now Button Styles */
+        .pay-now-btn {
+            background: linear-gradient(135deg, #6e48aa, #9c88ff);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(110, 72, 170, 0.3);
+        }
+        
+        .pay-now-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(110, 72, 170, 0.4);
+        }
+        
+        .pay-now-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Removed bottom navigation styles */
+    </style>
 </head>
 <body>
     <div class="chat-container">
         <header class="chat-header animate__animated animate__fadeIn">
-            <h1>BRYN</h1>
+            <div class="header-left">
+                <button id="back-btn" title="Back to Main Dashboard">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>BRYN</h1>
+            </div>
             <div>
                 <button id="settings-btn" title="Settings">
                     <i class="fas fa-ellipsis-v"></i>
@@ -36,29 +99,11 @@
                                 </select>
                             </div>
                         </div>
-                        <a href="{{ url_for('profile') }}" class="settings-link">
-                            <i class="fa fa-user" aria-hidden="true"></i> Profile
-                        </a>
-                        <a href="{{ url_for('user_notifications') }}" class="settings-link notification-link">
-                            <div class="notification-icon-wrapper">
-                                <i class="fa fa-bell{% if unread_count > 0 %} glowing{% endif %}" aria-hidden="true"></i>
-                                {% if unread_count > 0 %}
-                                <span class="pulse-ring"></span>
-                                <span class="shine"></span>
-                                {% endif %}
-                            </div> Notifications
-                        </a>
+                        
+                        
                         <button id="clear-history-settings" class="settings-link" title="Clear history">
                             <i class="fa fa-trash-alt"></i> Clear Chat
                         </button>
-                        
-                        <a href="{{ url_for('ideas') }}" class="settings-link">
-                            <i class="fa fa-paper-plane"></i>Send Feedbacks / Errors
-                        </a>
-
-                        <a href="{{ url_for('logout') }}" class="settings-link logout-btn">
-                            <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
-                        </a>
                     </div>
                     <div class="modal-buttons">
                         <button onclick="closeSettingsModal(event)">Close</button>
@@ -205,6 +250,11 @@
             }
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Add back button functionality
+            document.getElementById('back-btn').addEventListener('click', function() {
+                window.location.href = '{{ url_for("main_dashboard") }}';
+            });
+            
             loadMessages();
             const languageSelector = document.getElementById('language');
             const languageModal = document.getElementById('language-modal');
@@ -712,7 +762,12 @@ window.closeCameraModal = function () {
                 if (data.success) {
                     addBotMessage(data.response);
                 } else {
-                    addErrorMessage(data.error);
+                    // Check if this is a subscription error
+                    if (data.show_pay_button) {
+                        addSubscriptionErrorMessage(data.error);
+                    } else {
+                        addErrorMessage(data.error);
+                    }
                 }
             })
             .catch(error => {
@@ -810,7 +865,12 @@ window.closeCameraModal = function () {
                 if (data.success) {
                     addBotMessage(data.response);
                 } else {
-                    addErrorMessage(data.error);
+                    // Check if this is a subscription error
+                    if (data.show_pay_button) {
+                        addSubscriptionErrorMessage(data.error);
+                    } else {
+                        addErrorMessage(data.error);
+                    }
                 }
             } catch (error) {
                 removeTypingIndicator();
@@ -887,6 +947,26 @@ window.closeCameraModal = function () {
                 <div class="message-content">
                     <div class="message-sender">Error</div>
                     <div class="message-text">${error}</div>
+                </div>
+            `;
+            chatMessages.appendChild(messageElement);
+            scrollToBottom();
+            saveMessages();
+        }
+
+        // Add subscription error message with Pay Now button
+        function addSubscriptionErrorMessage(error) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message error-message animate__animated animate__fadeIn';
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-sender">Subscription Required</div>
+                    <div class="message-text">${error}</div>
+                    <div class="message-actions">
+                        <button class="pay-now-btn" onclick="window.location.href='{{ url_for('payment_pending_page') }}'">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </button>
+                    </div>
                 </div>
             `;
             chatMessages.appendChild(messageElement);
