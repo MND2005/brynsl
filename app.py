@@ -23,13 +23,16 @@ from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.renderPDF import drawToFile
 import io
 
-
-
+# Load environment variables
 load_dotenv()
 
+# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key')
 app.permanent_session_lifetime = datetime.timedelta(days=30)
+
+# Vercel requires the app to be accessible as a variable
+application = app
 
 firebase_cred = {
     "type": "service_account",
@@ -2739,5 +2742,5 @@ def admin_delete_paper(paper_id):
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
-    debug_mode = os.getenv("DEBUG", "True").lower() == "true"  # Enable debug mode
+    debug_mode = os.getenv("DEBUG", "False").lower() == "true"  # Disable debug mode for production
     app.run(host='0.0.0.0', port=port, debug=debug_mode)
